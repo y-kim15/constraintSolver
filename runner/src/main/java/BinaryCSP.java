@@ -34,4 +34,6 @@ public final class BinaryCSP {
   public ArrayList<BinaryConstraint> getConstraints() {
     return constraints ;
   }
+
+  public int[][] getDomainBounds(){ return domainBounds; }
 }
