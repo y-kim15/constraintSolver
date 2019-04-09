@@ -1,5 +1,6 @@
 import java.io.* ;
 import java.util.* ;
+import java.util.stream.Collectors;
 
 /**
  * A reader tailored for binary extensional CSPs.
@@ -12,13 +13,20 @@ public final class BinaryCSPReader {
   /**
    * Main (for testing)
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws impl.exception.QueueEmptyException {
     if (args.length != 1) {
       System.out.println("Usage: java BinaryCSPReader <file.csp>") ;
       return ;
     }
     BinaryCSPReader reader = new BinaryCSPReader() ;
-	  System.out.println(reader.readBinaryCSP(args[0])) ;
+	BinaryCSP prob = reader.readBinaryCSP(args[0]);
+      System.out.println(prob);
+      MACRunner mac = new MACRunner(prob);
+      List<Integer> vars = Arrays.stream(mac.getVariables()).boxed().collect(Collectors.toList());
+      mac.MAC3(vars);
+//      FCRunner fc = new FCRunner(prob);
+//      List<Integer> vars = Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
+//      fc.FC(vars);
   }
 
   /**

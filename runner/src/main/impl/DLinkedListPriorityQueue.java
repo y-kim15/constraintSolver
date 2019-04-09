@@ -14,6 +14,7 @@ public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
      * DoublyLinkedListPriorityQueue constructor.
      */
     public DLinkedListPriorityQueue() {
+        System.out.println("initialise");
         head.previous = tail.next;
         head.next = tail.previous;
         current_size = 0;
@@ -21,6 +22,7 @@ public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
 
     @Override
     public void enqueue(Comparable element) {
+        System.out.println("enqueue elements " + ((BinaryTuple) element).toString());
         BinaryTuple bt = (BinaryTuple) element;
         DLinkedListNode new_node = new DLinkedListNode(bt);
         if (isEmpty()) {
@@ -46,7 +48,7 @@ public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
     }
 
     public void blockEnqueue(DLinkedListPriorityQueue q1){
-        DLinkedListNode start = q1.head;
+        DLinkedListNode start = q1.head.next;
         while(start != q1.tail){
             enqueue(start.element);
             start = start.next;
