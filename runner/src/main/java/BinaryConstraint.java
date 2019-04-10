@@ -17,6 +17,8 @@ public final class BinaryConstraint {
 
   public int getSecondVar(){ return secondVar; }
 
+  public int getNTuples(){ return tuples.size(); }
+
   public String toString() {
     StringBuffer result = new StringBuffer() ;
     result.append("c("+firstVar+", "+secondVar+")\n") ;

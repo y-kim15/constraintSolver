@@ -28,6 +28,7 @@ public class MACRunner {
         for(int i = 0; i < variables.length; i++){ assigned[i] = EMPTY; }
     }
 
+    // ***
     private void writeDomain(){
         domains = new int[variables.length][domainBounds[0][1]+1];
         for(int i = 0; i < variables.length; i++) {
@@ -35,6 +36,29 @@ public class MACRunner {
                 domains[i][j] = j;
             }
         }
+    }
+
+    /**
+     * resets to start with the same csp problem
+     *
+     */
+    private void reset(){
+        writeDomain();
+        assigned = new int[variables.length];
+        for(int i = 0; i < variables.length; i++){ assigned[i] = EMPTY; }
+    }
+
+
+    /**
+     * reinitialise the solver with the new csp problem
+     * @param csp new csp problem to solve
+     */
+    private void setNew(BinaryCSP csp){
+        domainBounds = csp.getDomainBounds();
+        constraints = csp.getConstraints();
+        variables = new int[csp.getNoVariables()];
+        for(int i = 0; i < csp.getNoVariables(); i++){ variables[i] = i; }
+        reset();
     }
 
     public int[] getVariables(){ return variables; }
@@ -48,6 +72,14 @@ public class MACRunner {
     private DLinkedListPriorityQueue getAllArcs(int v) {
         DLinkedListPriorityQueue vars = new DLinkedListPriorityQueue();
         //TODO enqueue by selecting constraint will smallest number of allowed tuples first!
+        HashMap<Integer, Integer> tupCounts = new HashMap<>();
+        int i = 0;
+        for(BinaryConstraint bc : constraints){
+            tupCounts.put(i++, bc.getNTuples());
+        }
+
+
+
 
         for(int i = 0; i < v; i++){
             for(int j = 0; j < v; j++){
@@ -65,6 +97,7 @@ public class MACRunner {
         return vars;
     }
 
+    //**
     /**
      * returns index of binary constraint interested located in constraint list
      * @param v1 first variable
@@ -80,6 +113,7 @@ public class MACRunner {
         return EMPTY;
     }
 
+    //**
     /**
      * sorts varList in smallest domain first order (counts domain size and order in variables
      * with smallest domain first) to be called before FC selectVar
@@ -145,6 +179,7 @@ public class MACRunner {
 
     }
 
+    //**
     /**
      * selects value from the variable domain to choose to assign,
      * chosen according to ascending assignment ordering, find the first non-negative value in
@@ -166,6 +201,8 @@ public class MACRunner {
     }
 
 
+    //** in helperclass, we modify domains so should return this instead, as it gets sorted
+    // anyway, returned index is no use
     /**
      * removes value from domain of variable var
      * @param var variable of interest
@@ -175,10 +212,11 @@ public class MACRunner {
     private int removeVal(int var, int val){
         System.out.println("Inside remove");
         int ind = -1;
+        int[] dom = domains[var];
         // delete val from domain, and sort in ascending order
-        for(int i = 0; i < domains[var].length; i++){
-            if(domains[var][i] == val){
-                domains[var][i] = EMPTY;
+        for(int i = 0; i < dom.length; i++){
+            if(dom[i] == val){
+                dom[i] = EMPTY;
                 //Arrays.sort(domains[var]);
                 ind = i;
                 break;
@@ -309,6 +347,7 @@ public class MACRunner {
         return changed;
     }
 
+    //**
     public boolean isEmptyDomain(int[] domain){
         return (Arrays.stream(domain).allMatch(i -> i < 0));
     }
@@ -450,10 +489,12 @@ public class MACRunner {
         return (j == removed.length);
     }
 
+    //**
     private boolean completeAssignment() {
         return Arrays.stream(assigned).allMatch(i -> i > EMPTY);
     }
 
+    //**
     private void print_sol(){
         for(int i = 0; i < assigned.length; i++){
             System.out.println("Var" + variables[i] + ", " + assigned[i]);
