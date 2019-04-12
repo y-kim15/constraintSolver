@@ -36,4 +36,27 @@ public final class BinaryCSP {
   }
 
   public int[][] getDomainBounds(){ return domainBounds; }
+
+  /**
+   * find notations used for variables and save the sorted hashmap with
+   * variable value as key with its index as value
+   * @return hashmap as saved
+   */
+  public HashMap<Integer, Integer> getVariables(){
+    ArrayList<Integer> vars = new ArrayList<>();
+    for(BinaryConstraint bc: constraints){
+      int var1 = bc.getFirstVar();
+      int var2 = bc.getSecondVar();
+      if(!vars.contains(var1)) vars.add(var1);
+      if(!vars.contains(var2)) vars.add(var2);
+    }
+    Collections.sort(vars);
+    HashMap<Integer, Integer>  map = new HashMap<>();
+    int[] sorted = vars.stream().mapToInt(i -> i).toArray();
+    for(int i = 0; i < sorted.length; i++){
+      map.put(sorted[i], i);
+    }
+
+    return map;
+  }
 }

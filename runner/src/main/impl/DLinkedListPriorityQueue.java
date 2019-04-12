@@ -20,6 +20,10 @@ public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
         current_size = 0;
     }
 
+    public DLinkedListNode getHead(){ return head; }
+
+    public DLinkedListNode getTail(){ return tail; }
+
     @Override
     public void enqueue(Comparable element) {
         System.out.println("enqueue elements " + ((BinaryTuple) element).toString());
