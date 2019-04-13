@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import impl.exception.QueueEmptyException;
 
 
+import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.toMap;
 public class Solver{
     protected static final int EMPTY = -1;
@@ -16,8 +17,10 @@ public class Solver{
     private int[][] domainBounds ;
     private boolean fail = false;
     private boolean first = true;
-    private int nodes = 0;
     private ArrayList<BinaryConstraint> constraints ;
+    private HashMap<Integer, List<Integer>> connections;
+    long start = 0;
+    long end =  0;
     // added to act as a stack
     private ListStack<Map<BinaryTuple, BinaryTuple[]>> stack = new ListStack<>();
 
@@ -36,6 +39,7 @@ public class Solver{
     boolean getFail(){ return fail; }
     void setFail(boolean fail){ this.fail = fail; }
 
+    ArrayList<BinaryConstraint> getConstraints(){ return constraints; }
     private void setDomains(){
 
 
@@ -96,6 +100,8 @@ public class Solver{
         return EMPTY;
     }
 
+
+
     /**
      * sorts varList in smallest domain first order (counts domain size and order in variables
      * with smallest domain first) to be called before FC selectVar
@@ -114,22 +120,24 @@ public class Solver{
             for(int j = 0; j < varD.length; j++){
                 if(varD[j] > EMPTY) times++;
             }
-            varCounts.put(i, times);
+            varCounts.put(var, times);
         }
-        // now let's sort the map in decreasing order of value
+        // now let's sort the map in ascending order of value
         HashMap<Integer, Integer> sorted = varCounts
                 .entrySet()
                 .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .sorted(comparingByValue())
                 .collect(
                         toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
                                 LinkedHashMap::new));
-        List<Integer> sortedList = new ArrayList<>();
-        int ind = 0;
-        for(Integer key : sorted.keySet()) {
-            sortedList.add(ind++, varList.get(key));
-        }
-        Collections.sort(sortedList);
+                //.sorted(Collections.reverseOrder(comparingByValue()))
+
+        List<Integer> sortedList = new ArrayList<>(sorted.keySet());
+//        int ind = 0;
+//        for(Integer key : sorted.keySet()) {
+//            sortedList.add(ind++, varList.get(key));
+//        }
+        //Collections.sort(sortedList);
         System.out.println("------sorted------");
         return sortedList;
     }
@@ -191,7 +199,7 @@ public class Solver{
         for (Map.Entry<BinaryTuple, BinaryTuple[]> pair : pruned.entrySet()) {
             for(BinaryConstraint bc: constraints){
                 if(pair.getKey().both(bc.getFirstVar(), bc.getSecondVar())){
-                    System.out.println("this is the right constraint to add bt to");
+                    //System.out.println("this is the right constraint to add bt to");
                     bc.addTuples(pair.getValue());
                 }
             }
@@ -210,13 +218,13 @@ public class Solver{
 
                 // from R to L get the second var
                 if (!pair.getKey().getFirst()) {
-                    System.out.println("opposite");
+                    //System.out.println("opposite");
                     futureVar = pair.getKey().getVal2();
                     val = pair.getValue()[0].getVal2();
                 }
             }
-            System.out.println("var to recover is " + futureVar);
-            System.out.println("value to recover is " + val);
+//            System.out.println("var to recover is " + futureVar);
+//            System.out.println("value to recover is " + val);
             int varIndex = variables.get(futureVar);
             for(int i = 0; i < domains[varIndex].length; i++){
                 if(domains[varIndex][i] < 0){
@@ -248,43 +256,43 @@ public class Solver{
      * @return boolean denoting if the domain of x_i has changed
      */
     protected boolean revise(boolean type, BinaryConstraint bt, int var1, int var2) {
-        System.out.println("===== ReviseFC ======");
-        System.out.println("Arc revision in REVISEFC - var1: " + var1 + ", var2: " + var2);
+//        System.out.println("===== ReviseFC ======");
+//        System.out.println("Arc revision in REVISEFC - var1: " + var1 + ", var2: " + var2);
         int[] d1 = domains[variables.get(var1)];//domains[var1];
-        System.out.println("d1 domains");
+//        System.out.println("d1 domains");
         for(int v: d1) System.out.println(v);
         int[] d2 = domains[variables.get(var2)];//domains[var2];
-        System.out.println("d2 domains");
+//        System.out.println("d2 domains");
         for(int v: d2) System.out.println(v);
         //boolean first = false;
         if (bt.getFirstVar() != var1) first = false;
         else first = true;
-        System.out.println("order (first) is " + first);
+//        System.out.println("order (first) is " + first);
         boolean changed = false;
         int ind = -1;
         for(int i : d1){
             ind++;
-            System.out.println("i is " + i);
+//            System.out.println("i is " + i);
             if(i < 0) continue;
             boolean supported = false;
             int j = -1;
             while(!supported && j < d2.length - 1){
                 j++;
-                System.out.println("d2 is " + d2[j]);
+//                System.out.println("d2 is " + d2[j]);
                 if(d2[j] < 0) continue;
                 if(bt.checkMatch(i, d2[j], first)){
-                    System.out.println(var1 + ": " + i + " has support in " + var2 + " var2: " + d2[j]) ;
-                    System.out.println("first is " + first);
+//                    System.out.println(var1 + ": " + i + " has support in " + var2 + " var2: " + d2[j]) ;
+//                    System.out.println("first is " + first);
                     supported = true;
                 }
             }
             if(!supported){
-                System.out.println("no support for value " + i + " of futurevar " + var1 + "!");
-                System.out.println("drop " + i + " and all tuples from bt from it");
+//                System.out.println("no support for value " + i + " of futurevar " + var1 + "!");
+//                System.out.println("drop " + i + " and all tuples from bt from it");
                 // add
                 int v = i;
                 List<BinaryTuple> rms = bt.removeTuple(i, first);
-                System.out.println("&&&&&&&&&&&&&&&&&&&& removed tuples have length " + rms.size() + " ! &&&&&&&&&&&&&&&&&");
+//                System.out.println("&&&&&&&&&&&&&&&&&&&& removed tuples have length " + rms.size() + " ! &&&&&&&&&&&&&&&&&");
                 //BinaryTuple[] rmsArray = new BinaryTuple[rms.size()];
                 BinaryTuple[] rmsArray;
                 if(rms.size() > 0 ) {
@@ -302,8 +310,8 @@ public class Solver{
                 if(!first) copyRightOrder.setFirst(false);
                 map.put(copyRightOrder, rmsArray);//rms.toArray(rmsArray));
                 stack.push(map);
-                System.out.println("after pushing");
-                System.out.println("first is "+ first);
+//                System.out.println("after pushing");
+//                System.out.println("first is "+ first);
                 // remove value from dom by setting the value to -1
                 System.out.println("drop i, ind: " + ind);
                 d1[ind] = EMPTY;
@@ -311,17 +319,17 @@ public class Solver{
                 changed = true;
             }
         }
-        System.out.println("after loop");
-        System.out.println("d1 domains");
+//        System.out.println("after loop");
+//        System.out.println("d1 domains");
         for(int v: d1) System.out.println(v);
         //int i = assigned[var2];
         if(isEmptyDomain(d1)) {
-            System.out.println("Empty domain for " + var1);
+//            System.out.println("Empty domain for " + var1);
             // domain is empty set fail flag and return immediately
             if(!type) fail = true;
             return false;
         }
-        System.out.println("reached end of revise fc");
+//        System.out.println("reached end of revise fc");
         //System.out.println("reached end of revise fc with changed: " + changed);
         //if(!changed) return true;
         if(!type) return changed;
@@ -395,6 +403,11 @@ public class Solver{
         for(Integer v: variables.keySet()){
             System.out.println("var " + v + ", " + assigned[i++]);
         }
+        double seconds  = (double)(end - start) / 1_000_000_000.0;
+        double minutes = seconds / 60;
+        System.out.println("Elapsed Time: " + String.format( "%.2f",seconds) + " seconds");
+        System.out.println(String.format("%.2f", minutes) + " minutes");
+
 //        for(int i = 0; i < assigned.length; i++){
 //            System.out.println("Var" + variables[i] + ", " + assigned[i]);
 //        }
@@ -435,4 +448,36 @@ public class Solver{
                 .collect(Collectors.toList())   // List<Integer>
                 .indexOf(target);
     }
+
+
+    /**
+     * to be run at the start, log all variables it is connected
+     * for every variable
+     */
+    private void setConnections(){
+        HashMap<Integer, List<Integer>> connectCounts = new HashMap<>();
+        for(BinaryConstraint bt : constraints){
+            int v1 = bt.getFirstVar();
+            int v2 = bt.getSecondVar();
+            List<Integer> list = new ArrayList<>() ;
+            if (connectCounts.containsKey(v1)){
+                list = connectCounts.get(v1);
+                list.add(v2);
+            }
+            else list.add(v2);
+            connectCounts.put(v1, list);
+            if (connectCounts.containsKey(v2)) {
+                list = connectCounts.get(v2);
+                list.add(v1);
+            }
+            else list.add(v1);
+            connectCounts.put(v2, list);
+        }
+        connections = connectCounts;
+
+    }
+
+
+
+
 }

@@ -22,16 +22,16 @@ public final class BinaryCSPReader {
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
       //System.out.println(prob);
       //MACRunner mac = new MACRunner(prob);
-      MACSolver fc = new MACSolver(prob);
-      //FCSolver fc= new FCSolver(prob);
+      //MACSolver fc = new MACSolver(prob);
+      FCSolver fc= new FCSolver(prob);
       //FCRunner fc = new FCRunner(prob);
       //Solver fc = new Solver(prob);
 
       List<Integer> vars = new ArrayList<>(fc.getVariables().keySet());
       //       Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
-      //fc.FC(vars);
+      fc.FC(vars);
       //fc.getAllArcs(vars.size());
-      fc.MAC3(vars);
+      //fc.MAC3(vars);
       //mac.MAC3(vars);
 //      FCRunner fc = new FCRunner(prob);
 //      List<Integer> vars = Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());

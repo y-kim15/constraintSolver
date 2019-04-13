@@ -57,13 +57,13 @@ public final class BinaryConstraint {
    * @return boolean
    */
   public boolean checkMatch(int v1, int v2, boolean first){
-      System.out.println("INSIDE CHECK MATCH");
+//      System.out.println("INSIDE CHECK MATCH");
     boolean match = false;
     for (BinaryTuple bt: tuples){
-        System.out.println("check with tuple for matching: ");
-        System.out.println(bt.toString());
+//        System.out.println("check with tuple for matching: ");
+//        System.out.println(bt.toString());
       if(bt.matches(v1, v2, first)) {
-          System.out.println("matches!");
+//          System.out.println("matches!");
           match = true;
           break;
         }
