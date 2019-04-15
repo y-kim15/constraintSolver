@@ -16,7 +16,6 @@ public class FCSolverTest {
     private static BinaryCSPReader reader;
     private FCSolver fc;
     private static String[] inputs;
-    private int i = 0;
 
     @Parameterized.Parameters
     public static Iterable<? extends Object> inputs(){
