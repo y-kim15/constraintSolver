@@ -1,30 +1,32 @@
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import impl.exception.QueueEmptyException;
-
-
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.toMap;
+
 public class Solver{
     protected static final int EMPTY = -1;
     protected static final int EXIT = 2;
+    private BinaryCSP csp;
     private HashMap<Integer, Integer> variables;
     private int num;
     private int[] assigned;
     private int[][] domains;
     private int[][] domainBounds ;
     private boolean fail = false;
-    private boolean first = true;
+    //private boolean first = true;
     private ArrayList<BinaryConstraint> constraints ;
     private HashMap<Integer, List<Integer>> connections;
     long start = 0;
     long end =  0;
+    int last = -1;
+    BinaryTuple lastTry;
     // added to act as a stack
     private ListStack<Map<BinaryTuple, BinaryTuple[]>> stack = new ListStack<>();
+    private Control cont;
 
-    Solver(BinaryCSP csp){
+    Solver(BinaryCSP csp, Heuristics type, Heuristics selType){
+        this.csp = csp;
         domainBounds = csp.getDomainBounds();
         constraints = csp.getConstraints();
         variables = csp.getVariables();
@@ -34,16 +36,17 @@ public class Solver{
         writeDomain();
         assigned = new int[num];
         for(int i = 0; i < num; i++){ assigned[i] = EMPTY; }
+        setConnections();
+        //controlType = type;
+        if(type.getVal() < EMPTY) cont = new Control(variables, constraints, connections, type, selType,true);
+        else cont = new Control(variables, constraints, connections, type, selType,false);
     }
 
     boolean getFail(){ return fail; }
     void setFail(boolean fail){ this.fail = fail; }
 
     ArrayList<BinaryConstraint> getConstraints(){ return constraints; }
-    private void setDomains(){
-
-
-    }
+    List<Integer> getConnectionVar(int var){ return connections.get(var); }
     // ***
 
     /**
@@ -69,6 +72,7 @@ public class Solver{
         writeDomain();
         assigned = new int[num];
         for(int i = 0; i < num; i++){ assigned[i] = EMPTY; }
+        constraints = csp.getConstraints();
     }
 
 
@@ -77,6 +81,7 @@ public class Solver{
      * @param csp new csp problem to solve
      */
     void setNew(BinaryCSP csp){
+        this.csp = csp;
         domainBounds = csp.getDomainBounds();
         constraints = csp.getConstraints();
         variables = csp.getVariables();
@@ -100,6 +105,44 @@ public class Solver{
         return EMPTY;
     }
 
+    // first initialisation varlist call!
+    protected List<Integer> getVarList(){
+        List<Integer> varList = new ArrayList<>(getVariables().keySet());
+        switch (cont.type){
+            case MAXDEG:
+                varList = cont.orderByDeg();
+                break;
+            case MAXCAR:
+                varList = cont.orderByCard();
+                break;
+            default:
+                varList = sortVarList(varList);
+                break;
+        }
+        return varList;
+    }
+
+
+    protected int selectVar(List<Integer> varList){
+        int nextVar = -1;
+        switch (cont.type){
+            case SDF:
+                varList = sortVarList(varList);
+                nextVar = varList.get(0);
+                //if(lastTry != null  && lastTry.getVal2() == EMPTY && lastTry.getVal1() == varList.get(0) && varList.size()>1) nextVar = varList.get(1);
+                break;
+            case BRELAZ:
+                nextVar = cont.brelaz(varList, domains);
+                break;
+            case DOMDEG:
+                nextVar = cont.domDeg(varList, domains);
+                break;
+            default:
+                 nextVar = varList.get(0);
+                 break;
+        }
+        return nextVar;
+    }
 
 
     /**
@@ -149,14 +192,24 @@ public class Solver{
      * @param var variable interested
      * @return value to assign
      */
-    protected int selectVal(int var){
-        int[] domain = domains[variables.get(var)];//domains[var];
-        // assuming that it is already sorted in -1, -1, ... some values order
+    protected int selectVal(List<Integer> varList, int var){
+        System.out.println("select val for var: " + var);
         int val = -1;
-        for(int i = 0; i < domain.length; i++){
-            if(domain[i] > EMPTY) {
-                val = domain[i];
-                break;
+        if(cont.selType == Heuristics.MINCONF) {
+            val = minConflicts(varList, var);
+        }
+        else {
+            int[] domain = domains[variables.get(var)];//domains[var];
+            Arrays.sort(domain);
+            // assuming that it is already sorted in -1, -1, ... some values order
+
+            int check = EMPTY;
+            if (lastTry != null && lastTry.getVal1() == var) check = lastTry.getVal2();
+            for (int i = 0; i < domain.length; i++) {
+                if (domain[i] > EMPTY && domain[i] != check) {
+                    val = domain[i];
+                    break;
+                }
             }
         }
         return val;
@@ -264,7 +317,7 @@ public class Solver{
         int[] d2 = domains[variables.get(var2)];//domains[var2];
 //        System.out.println("d2 domains");
         for(int v: d2) System.out.println(v);
-        //boolean first = false;
+        boolean first = true;
         if (bt.getFirstVar() != var1) first = false;
         else first = true;
 //        System.out.println("order (first) is " + first);
@@ -436,7 +489,10 @@ public class Solver{
     }
 
     void unassignVal(int var){
+        int v = assigned[variables.get(var)];
+        lastTry = new BinaryTuple(var, v);
         assigned[variables.get(var)] = EMPTY;
+
         //assigned[var] = EMPTY;
     }
 
@@ -466,17 +522,73 @@ public class Solver{
             }
             else list.add(v2);
             connectCounts.put(v1, list);
+            List<Integer> list2 = new ArrayList<>() ;
             if (connectCounts.containsKey(v2)) {
-                list = connectCounts.get(v2);
-                list.add(v1);
+                list2 = connectCounts.get(v2);
+                list2.add(v1);
             }
-            else list.add(v1);
-            connectCounts.put(v2, list);
+            else list2.add(v1);
+            connectCounts.put(v2, list2);
         }
         connections = connectCounts;
 
     }
 
+    protected int minConflicts(List<Integer> varList, int var){
+        int[] curVarDom = domains[variables.get(var)];
+        List<Integer> cons = connections.get(var);
+        // <val of domain, no of incomp val in future vars' dom>
+        HashMap<Integer, Integer> valCount = new HashMap<>();
+        for(int val: curVarDom){
+            System.out.println("val is " + val);
+            if(val == EMPTY) continue;
+            int notCom = 0;
+            for(int futureVar : cons){
+                if(varList.indexOf(futureVar) == EMPTY) continue;
+                BinaryConstraint bc = getConstraintIndex(getConstraint(var, futureVar));
+                boolean first = true;
+                if(bc.getSecondVar() == var) first = false;
+                int[] otherDom = domains[variables.get(futureVar)];
+                for(int j = 0; j < otherDom.length; j++){
+                    if(!bc.checkMatch(val, otherDom[j], first)) notCom++;
+                }
+
+            }
+            System.out.println("put " + notCom);
+            valCount.put(val, notCom);
+
+        }
+        // sort in ascending order
+        valCount = sort(valCount, true);
+        return valCount.keySet().iterator().next();
+    }
+
+    public HashMap<Integer, Integer> sort(HashMap<Integer, Integer> counts, boolean order){
+        HashMap<Integer, Integer> sorted;
+        // ascending order
+        if(order){
+            // sort by ascending order of values
+            sorted = counts
+                    .entrySet()
+                    .stream()
+                    .sorted(comparingByValue())
+                    .collect(
+                            toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                    LinkedHashMap::new));
+        }
+        else{
+            // sort by decreasing order of values
+            sorted = counts
+                    .entrySet()
+                    .stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                    .collect(
+                            toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                    LinkedHashMap::new));
+        }
+        return sorted;
+
+    }
 
 
 

@@ -1,6 +1,15 @@
 import java.io.* ;
 import java.util.* ;
-import java.util.stream.Collectors;
+
+enum Heuristics {
+    MAXDEG(-3), MAXCAR(-1), SDF(3), BRELAZ(4), DOMDEG(5), ASCEND(6), MINCONF(7);
+    private final int val;
+    private Heuristics(int val){
+        this.val = val;
+    }
+    public int getVal(){ return val;}
+}
+
 
 /**
  * A reader tailored for binary extensional CSPs.
@@ -22,16 +31,22 @@ public final class BinaryCSPReader {
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
       //System.out.println(prob);
       //MACRunner mac = new MACRunner(prob);
-      //MACSolver fc = new MACSolver(prob);
-      FCSolver fc= new FCSolver(prob);
+      MACSolver fc = new MACSolver(prob, Heuristics.BRELAZ, Heuristics.ASCEND);
+      //List<Integer> list = fc.getVarList();
+      //System.out.println(Arrays.toString(list.toArray()));
+      //FCSolver fc= new FCSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
       //FCRunner fc = new FCRunner(prob);
       //Solver fc = new Solver(prob);
 
-      List<Integer> vars = new ArrayList<>(fc.getVariables().keySet());
+      //List<Integer> vars = new ArrayList<>(fc.getVariables().keySet());
       //       Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
-      fc.FC(vars);
+      //fc.doForwardCheck();
       //fc.getAllArcs(vars.size());
-      //fc.MAC3(vars);
+      fc.doMAC();
+//      System.out.println("reset");
+//      fc.reset();
+//      System.out.println("=================================================================================second run");
+//      fc.doMAC();
       //mac.MAC3(vars);
 //      FCRunner fc = new FCRunner(prob);
 //      List<Integer> vars = Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());

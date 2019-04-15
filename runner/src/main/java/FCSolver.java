@@ -1,10 +1,18 @@
 import java.util.*;
 
-public class FCSolver extends Solver implements IFCSolver {
+public class FCSolver extends Solver {
     private int nodes = 0;
+    private int fcNodes = 0;
 
-    FCSolver(BinaryCSP csp){
-        super(csp);
+
+    FCSolver(BinaryCSP csp, Heuristics type, Heuristics selType){
+        super(csp, type, selType);
+    }
+
+    public void doForwardCheck(){
+        List<Integer> varList = getVarList();
+        start = System.nanoTime();
+        FC(varList);
     }
 
     /**
@@ -12,8 +20,8 @@ public class FCSolver extends Solver implements IFCSolver {
      * @param varList a list of unassigned variables
      * @return integer to denote status, return EXIT (2) if soln is found
      */
-    public int FC(List<Integer> varList){
-        if(start == 0) start = System.nanoTime();
+    private int FC(List<Integer> varList){
+        fcNodes++;
         System.out.println("########### FC " + ++nodes + "th Node#############");
 //        if(completeAssignment()){
 //            System.out.println("Print Solution");
@@ -28,10 +36,12 @@ public class FCSolver extends Solver implements IFCSolver {
             return EXIT;
         }
         System.out.println(varList.toString());
-        varList = sortVarList(varList);
+        //varList = sortVarList(varList);
         System.out.println("after sorting: "  + varList.toString());
-        int var = varList.get(0); //or call selectVar
-        int val = selectVal(var);
+        if(last == EMPTY) last = varList.get(0);
+        int var = selectVar(varList);//, last);//varList.get(0); //or call selectVar
+        last = var;
+        int val = selectVal(varList, var);
         System.out.println("GO TO LEFT");
         List<Integer> copVarList = (List<Integer>) ((ArrayList<Integer>) varList).clone();
         if(branchFCLeft(varList, var, val) == EXIT) return EXIT ;
@@ -59,10 +69,11 @@ public class FCSolver extends Solver implements IFCSolver {
             System.out.println("assignment is consistent, has support");
             System.out.println("before removing : " + varList.toString() + " with var " + var);
             varList.remove(Integer.valueOf(var));
+            last = -1;
             System.out.println("after removing : " + varList.toString());
             //FC(varList without var)
             if(FC(varList) == EXIT){
-                System.out.println("FOUND");
+                //System.out.println("FOUND");
                 return EXIT;
             }
         }
@@ -147,6 +158,7 @@ public class FCSolver extends Solver implements IFCSolver {
         System.out.println("================= FC Output =============");
         super.print_sol();
         System.out.println("No. Nodes: " + nodes);
+        System.out.println("No of fc calls " + fcNodes);
     }
 
 
