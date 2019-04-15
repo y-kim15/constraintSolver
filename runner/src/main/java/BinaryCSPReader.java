@@ -31,7 +31,7 @@ public final class BinaryCSPReader {
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
       //System.out.println(prob);
       //MACRunner mac = new MACRunner(prob);
-      MACSolver fc = new MACSolver(prob, Heuristics.BRELAZ, Heuristics.ASCEND);
+      MACSolver fc = new MACSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
       //List<Integer> list = fc.getVarList();
       //System.out.println(Arrays.toString(list.toArray()));
       //FCSolver fc= new FCSolver(prob, Heuristics.SDF, Heuristics.MINCONF);

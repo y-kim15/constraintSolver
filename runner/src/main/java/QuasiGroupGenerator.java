@@ -13,6 +13,63 @@ public final class QuasiGroupGenerator {
           System.out.println(val1+", "+val2) ;
   }
 
+  private static int[][] read2(String fn){
+    try{
+      //System.out.println("started reading second .pls format!");
+      inFR = new FileReader(fn) ;
+      in = new StreamTokenizer(inFR) ;
+      in.ordinaryChar('o') ;
+      in.ordinaryChar('r') ;
+      in.ordinaryChar('d') ;
+      in.ordinaryChar('e') ;
+      in.ordinaryChar('r') ;
+      in.wordChars('-', '-');
+      for(int i = 0; i < 6; i++) in.nextToken() ;    // space
+      int n = (int)in.nval ;
+      //in.nextToken(); // space in next line
+      int[][] values = new int[n][n] ;
+      //in.nextToken();                             // '|'
+      for (int i = 0; i < n; i++) {
+        //System.out.println((i+1)+"th row");
+        for(int j = 0; j < n; j++) {
+          int val = 0;
+
+          //in.nextToken();
+          //in.nextToken();  //  3 x spaces
+          int token = in.nextToken(); // value (check if it is -s)
+          if(token != (StreamTokenizer.TT_NUMBER)){
+            //System.out.println("its -1");
+            values[i][j] = 0;
+            in.nextToken();
+          }
+          else{
+            //in.nextToken();
+            //System.out.println("else add one!");
+           val = ((int) in.nval);
+            values[i][j] = ++val;
+          }
+          //System.out.println((j+1)+"th col val: " + values[i][j]);
+                                            // ','
+          //in.nextToken();
+        }
+        //in.nextToken();                               // '|'
+      }
+//      for(int i=0; i < n; i++){
+//        for(int j=0; j < n; j++){
+//          System.out.println(values[i][j]);
+//        }
+//      }
+      // TESTING:
+      // System.out.println(csp) ;
+      inFR.close() ;
+      return values;
+
+    }
+    catch (FileNotFoundException e) {System.out.println(e);}
+    catch (IOException e) {System.out.println(e);}
+    return null;
+  }
+
   private static int[][] read(String fn){
     try {
       //System.out.println("started reading");
@@ -65,20 +122,30 @@ public final class QuasiGroupGenerator {
     catch (IOException e) {System.out.println(e);}
     return null;
   }
+
+
   
   public static void main (String[] args) throws NullPointerException, FileNotFoundException {
     System.out.println("Usage: java QuasiGroupGenerator") ;
     int n = Integer.parseInt(args[1]);
-//    PrintStream ps = new PrintStream("runner/src/main/resources/"+n+"_"+"QuasiGroup.csp");
-//    System.setOut(ps);
+    PrintStream ps = new PrintStream("runner/src/main/resources/"+n+"_"+"QuasiGroup.csp");
+    System.setOut(ps);
     System.out.println("//QuasiGroupCompletion.") ;
     System.out.println("\n// "+(n*n)+" variables:\n"+(n*n)) ;
+    int[][] values;
+    if(args[0].endsWith(".pls")) values = read2(args[0]);
+    else values = read(args[0]);
     System.out.println("\n// Domains of the variables: 1.."+n+" (inclusive)") ;
-    int[][] values = read(args[0]);
+
+    int holes = 0;
+
     try {
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-          if (values[i][j] == 0) System.out.println("1, " + n);
+          if (values[i][j] == 0){
+            holes++;
+            System.out.println("1, " + n);
+          }
           else System.out.println(values[i][j] + ", " + values[i][j]);
         }
       }
@@ -89,7 +156,7 @@ public final class QuasiGroupGenerator {
     }
     System.out.println("\n// constraints (vars indexed from 0, allowed tuples):") ;
 
-
+    System.out.println("\n//Number of Holes: "+holes+"\n");
 
     // Rows
     for (int row = 1; row <= n; row++) {

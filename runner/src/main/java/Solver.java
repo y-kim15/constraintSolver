@@ -129,7 +129,10 @@ public class Solver{
             case SDF:
                 varList = sortVarList(varList);
                 nextVar = varList.get(0);
-                //if(lastTry != null  && lastTry.getVal2() == EMPTY && lastTry.getVal1() == varList.get(0) && varList.size()>1) nextVar = varList.get(1);
+//                if(lastTry != null  && lastTry.getVal2() == EMPTY && lastTry.getVal1() == varList.get(0) && varList.size()>1){
+//                    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//                    nextVar = varList.get(1);
+//                }
                 break;
             case BRELAZ:
                 nextVar = cont.brelaz(varList, domains);
