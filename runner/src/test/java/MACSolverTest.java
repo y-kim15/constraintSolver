@@ -1,4 +1,4 @@
-import exception.QueueEmptyException;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class MACSolverTest {
     }
 
     @Test
-    public void solve() throws QueueEmptyException {
+    public void solve() throws impl.exception.QueueEmptyException {
         mac.doMAC();
         System.out.println("----------------------------------------");
     }

@@ -31,18 +31,18 @@ public final class BinaryCSPReader {
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
       //System.out.println(prob);
       //MACRunner mac = new MACRunner(prob);
-      MACSolver fc = new MACSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
+      //MACSolver fc = new MACSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
       //List<Integer> list = fc.getVarList();
       //System.out.println(Arrays.toString(list.toArray()));
-      //FCSolver fc= new FCSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
+      FCSolver fc= new FCSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
       //FCRunner fc = new FCRunner(prob);
       //Solver fc = new Solver(prob);
 
       //List<Integer> vars = new ArrayList<>(fc.getVariables().keySet());
       //       Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
-      //fc.doForwardCheck();
+      fc.doForwardCheck();
       //fc.getAllArcs(vars.size());
-      fc.doMAC();
+      //fc.doMAC();
 //      System.out.println("reset");
 //      fc.reset();
 //      System.out.println("=================================================================================second run");

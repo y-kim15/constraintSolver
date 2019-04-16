@@ -2,7 +2,6 @@ package impl;
 
 
 import impl.exception.QueueEmptyException;
-import impl.exception.QueueFullException;
 /**
  * Simple priority queue interface.
  * 

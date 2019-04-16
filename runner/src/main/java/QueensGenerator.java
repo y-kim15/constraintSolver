@@ -1,10 +1,15 @@
+import java.io.IOException;
+import java.io.PrintStream;
 public final class QueensGenerator {
-  public static void main (String[] args) {
+  public String main (String[] args) throws IOException {
     if (args.length != 1) {
       System.out.println("Usage: java QueensGenerator <n>") ;
-      return ;
+      return "";
     }
     int n = Integer.parseInt(args[0]) ;
+    String fn = "runner/src/test/extra/"+n+"Queens.csp";
+    PrintStream ps = new PrintStream(fn);
+    System.setOut(ps);
     System.out.println("//"+n+"-Queens.") ;
     System.out.println("\n// Number of variables:\n"+n) ;
     System.out.println("\n// Domains of the variables: 0.. (inclusive)") ;
@@ -24,5 +29,6 @@ public final class QueensGenerator {
           }
         System.out.println() ;
       }
+    return fn;
   }
 }

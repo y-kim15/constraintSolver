@@ -14,6 +14,7 @@ public class MACSolver extends Solver {
         System.out.println("got list for the first time");
         varList.forEach(System.out::println);
         start = System.nanoTime();
+        AC3(varList, EMPTY);
         MAC3(varList);
     }
 
@@ -32,7 +33,8 @@ public class MACSolver extends Solver {
             List<Integer> cons = getConnectionVar(var);
             // add to arc only if it is those which are not assigned
             for (int v2 : cons) {
-                if (varList.indexOf(v2) > EMPTY) vars.enqueue(new BinaryTuple(v2, var));
+                //if (varList.indexOf(v2) > EMPTY)
+                vars.enqueue(new BinaryTuple(v2, var));
             }
         }
         else{
@@ -153,7 +155,7 @@ public class MACSolver extends Solver {
 //        System.out.println("Removed value " + val + " from var " + var);
         int[] doms = getVarDomain(var);
         if(!isEmptyDomain(doms)){
-            var = EMPTY;
+            //var = EMPTY;
 //            System.out.println("If domain not empty apply AC3 again");
             if(AC3(varList, var)) {
 //                System.out.println("do MAC3");
