@@ -1,0 +1,18 @@
++++++++++++++++++langfords2_5.csp+++++++++++++++++++++
+=================== FC Output ===============
+Depth: 375
+Total FC Calls: 1125
+Elapsed Time 1: 173.42 milliseconds
+Elapsed Time 2: 0.17 seconds
+Variable Ordering: sdf
+Value Ordering: asc
+No valid assignment
++++++++++++++++++langfords2_5.csp+++++++++++++++++++++
+=================== MAC Output ===============
+Depth: 44
+Number of Arc Revisions: 3573
+Elapsed Time 1: 87.81 milliseconds
+Elapsed Time 2: 0.09 seconds
+Variable Ordering: sdf
+Value Ordering: asc
+No valid assignment

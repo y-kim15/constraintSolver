@@ -1,0 +1,9 @@
++++++++++++++++++langfords4_9.csp+++++++++++++++++++++
+=================== MAC Output ===============
+Depth: 922
+Number of Arc Revisions: 556856
+Elapsed Time 1: 6024.38 milliseconds
+Elapsed Time 2: 6.02 seconds
+Variable Ordering: sdf
+Value Ordering: asc
+No valid assignment
