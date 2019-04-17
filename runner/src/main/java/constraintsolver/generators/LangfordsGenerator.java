@@ -1,7 +1,9 @@
 package constraintsolver.generators;
+import java.io.IOException;
+import java.io.PrintStream;
 public final class LangfordsGenerator {
   
-  public static void main (String[] args) {
+  public static void main (String[] args) throws IOException {
     if (args.length != 2) {
       System.out.println("Usage: java constraintsolver.generators.LangfordsGenerator <k> <n>") ;
       System.out.println("for <k> sets of <n> integers") ;
@@ -9,6 +11,8 @@ public final class LangfordsGenerator {
     }
     int k = Integer.parseInt(args[0]) ;
     int n = Integer.parseInt(args[1]) ;
+    PrintStream ps = new PrintStream("runner/src/test/extra/langfords"+k+"_"+ + n + ".csp");
+    System.setOut(ps);
     System.out.println("//Langford, k = "+k+" n = "+n) ;
     
     int seqLength = k * n ;
