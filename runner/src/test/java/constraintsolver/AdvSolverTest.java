@@ -84,15 +84,21 @@ public class AdvSolverTest {
             heuristics_val = new Heuristics[]{Heuristics.ASCEND, Heuristics.MINCONF};
             var = 5; val = 2;
         }
-        else if(ordering.equals("dynamic")){
+        else if(ordering.equals("basic")){
+            heuristics_var = new Heuristics[]{Heuristics.SDF};
+            heuristics_val = new Heuristics[]{Heuristics.ASCEND};
+            var = 1; val = 1;
+        }
+        else if(ordering.equals("allVal")){
             heuristics_var = new Heuristics[]{Heuristics.SDF, Heuristics.BRELAZ, Heuristics.DOMDEG};
             heuristics_val = new Heuristics[]{Heuristics.ASCEND, Heuristics.MINCONF};
             var = 3; val = 2;
         }
         else{
-            heuristics_var = new Heuristics[]{Heuristics.SDF};
-            heuristics_val = new Heuristics[]{Heuristics.ASCEND};
-            var = 1; val = 1;
+            heuristics_var = new Heuristics[]{Heuristics.SDF, Heuristics.BRELAZ, Heuristics.DOMDEG};
+            heuristics_val = new Heuristics[]{Heuristics.MINCONF};
+            var = 3; val = 1;
+
         }
         for(int v1 = 0; v1 < var; v1++) {
             for(int v2 = 0; v2 < val; v2++) {
