@@ -1,3 +1,7 @@
+package constraintsolver;
+import constraintsolver.impl.BinaryTuple;
+
+import java.io.IOException;
 import java.util.*;
 
 public class FCSolver extends Solver {
@@ -11,7 +15,7 @@ public class FCSolver extends Solver {
 
     public void doForwardCheck(){
         List<Integer> varList = getVarList();
-        start = System.nanoTime();
+       // start = System.nanoTime();
         FC(varList);
     }
 
@@ -25,28 +29,28 @@ public class FCSolver extends Solver {
         System.out.println("########### FC " + ++nodes + "th Node#############");
 //        if(completeAssignment()){
 //            System.out.println("Print Solution");
-//            print_sol();
+//            printSol();
 //            return EXIT;
 //        }
         // all positive so all variables are assigned
         if(completeAssignment()){
-            end = System.nanoTime();
+           // end = System.nanoTime();
             System.out.println(" SOLUTION FOUND! EXIT");
-            print_sol();
-            return EXIT;
+            //printSol();
+            return Solver.EXIT;
         }
         System.out.println(varList.toString());
         //varList = sortVarList(varList);
         System.out.println("after sorting: "  + varList.toString());
-        if(last == EMPTY) last = varList.get(0);
+       // if(last == EMPTY) last = varList.get(0);
         int var = selectVar(varList);//, last);//varList.get(0); //or call selectVar
-        last = var;
+        //last = var;
         int val = selectVal(varList, var);
         System.out.println("GO TO LEFT");
         List<Integer> copVarList = (List<Integer>) ((ArrayList<Integer>) varList).clone();
-        if(branchFCLeft(varList, var, val) == EXIT) return EXIT ;
+        if(branchFCLeft(varList, var, val) == Solver.EXIT) return Solver.EXIT ;
         System.out.println("GO TO RIGHT");
-        if(branchFCRight(copVarList, var, val) == EXIT) return EXIT ;
+        if(branchFCRight(copVarList, var, val) == Solver.EXIT) return Solver.EXIT ;
         return 0;
     }
 
@@ -69,12 +73,12 @@ public class FCSolver extends Solver {
             System.out.println("assignment is consistent, has support");
             System.out.println("before removing : " + varList.toString() + " with var " + var);
             varList.remove(Integer.valueOf(var));
-            last = -1;
+            //last = -1;
             System.out.println("after removing : " + varList.toString());
             //FC(varList without var)
-            if(FC(varList) == EXIT){
+            if(FC(varList) == Solver.EXIT){
                 //System.out.println("FOUND");
-                return EXIT;
+                return Solver.EXIT;
             }
         }
         System.out.println("false, domain was emptied by the assignment undo");
@@ -110,9 +114,9 @@ public class FCSolver extends Solver {
         }
         System.out.println(s);
         // checks if domain is empty (if sum of all values = -(length)
-        if(Arrays.stream(doms).sum() > (EMPTY)*(doms.length)){
+        if(Arrays.stream(doms).sum() > (Solver.EMPTY)*(doms.length)){
             if(reviseFA(varList, var, val)){
-                if(FC(varList) == EXIT) return EXIT;
+                if(FC(varList) == Solver.EXIT) return Solver.EXIT;
             }
             undoPruning();
         }
@@ -153,10 +157,9 @@ public class FCSolver extends Solver {
         return true;
     }
 
-    @Override
-    protected void print_sol(){
+    protected void printSol() throws IOException {
         System.out.println("================= FC Output =============");
-        super.print_sol();
+        super.printSol(false, "", "");
         System.out.println("No. Nodes: " + nodes);
         System.out.println("No of fc calls " + fcNodes);
     }

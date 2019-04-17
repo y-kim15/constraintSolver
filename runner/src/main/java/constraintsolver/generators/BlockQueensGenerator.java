@@ -1,3 +1,6 @@
+package constraintsolver.generators;
+import constraintsolver.impl.BinaryTuple;
+
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -11,7 +14,7 @@ public final class BlockQueensGenerator {
     PrintStream ps = new PrintStream("runner/src/main/resources/"+n+"_"+m+"Queens.csp");
     System.setOut(ps);
 //    if (args.length != 1) {
-//      System.out.println("Usage: java QueensGenerator <n>") ;
+//      System.out.println("Usage: java constraintsolver.generators.QueensGenerator <n>") ;
 //      return ;
 //    }
 

@@ -1,3 +1,4 @@
+package constraintsolver.inter;
 import java.util.List;
 
 public interface IMACSolver {
@@ -8,6 +9,6 @@ public interface IMACSolver {
      * @return integer value to denote return status (2 : complete so exit, 0 : continue)
      *
      */
-    int MAC3(List<Integer> varList) throws impl.exception.QueueEmptyException;
+    int MAC3(List<Integer> varList) throws constraintsolver.impl.exception.QueueEmptyException;
 
 }

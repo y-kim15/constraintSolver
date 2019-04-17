@@ -1,4 +1,4 @@
-package impl.exception;
+package constraintsolver.impl.exception;
 
 /**
  * This exception may be thrown when attempting to dequeue from an empty queue.

@@ -1,12 +1,9 @@
-package impl;
-
-
-import impl.exception.QueueEmptyException;
+package constraintsolver.impl;
 /**
  * Simple priority queue interface.
  * 
  */
-public interface IPriorityQueue {
+interface IPriorityQueue {
 
     /**
      * Adds an element to the queue.
@@ -19,9 +16,9 @@ public interface IPriorityQueue {
      * Removes the largest element.
      * 
      * @return the element removed
-     * @throws QueueEmptyException if the queue is empty
+     *
      */
-    Comparable dequeue() throws QueueEmptyException;
+    Comparable dequeue();
 
     /**
      * Returns the number of elements in the queue.

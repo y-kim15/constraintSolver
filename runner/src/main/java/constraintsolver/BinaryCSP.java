@@ -1,10 +1,15 @@
+package constraintsolver;
+import constraintsolver.impl.BinaryConstraint;
+
 import java.util.* ;
 
 public final class BinaryCSP {
+  private String name;
   private int[][] domainBounds ;
   private ArrayList<BinaryConstraint> constraints ;
   
-  public BinaryCSP(int[][] db, ArrayList<BinaryConstraint> c) {
+  BinaryCSP(String name, int[][] db, ArrayList<BinaryConstraint> c) {
+    this.name = name;
     domainBounds = db ;
     constraints = c ;
   }
@@ -18,7 +23,9 @@ public final class BinaryCSP {
       result.append(bc+"\n") ;
     return result.toString() ;
   }
-  
+
+  public String getName(){ return name; }
+
   public int getNoVariables() {
     return domainBounds.length ;
   }

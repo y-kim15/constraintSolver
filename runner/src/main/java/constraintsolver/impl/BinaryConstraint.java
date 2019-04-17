@@ -1,4 +1,4 @@
-
+package constraintsolver.impl;
 import java.util.* ;
 
 public final class BinaryConstraint {

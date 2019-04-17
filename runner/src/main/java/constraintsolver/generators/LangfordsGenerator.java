@@ -1,8 +1,9 @@
+package constraintsolver.generators;
 public final class LangfordsGenerator {
   
   public static void main (String[] args) {
     if (args.length != 2) {
-      System.out.println("Usage: java LangfordsGenerator <k> <n>") ;
+      System.out.println("Usage: java constraintsolver.generators.LangfordsGenerator <k> <n>") ;
       System.out.println("for <k> sets of <n> integers") ;
       return ;
     }

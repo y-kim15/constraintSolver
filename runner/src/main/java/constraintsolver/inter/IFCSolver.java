@@ -1,3 +1,4 @@
+package constraintsolver.inter;
 import java.util.List;
 
 public interface IFCSolver {

@@ -1,4 +1,4 @@
-import java.util.concurrent.CompletableFuture;
+package constraintsolver.impl;
 /**
  * Assumes tuple values are integers
  */

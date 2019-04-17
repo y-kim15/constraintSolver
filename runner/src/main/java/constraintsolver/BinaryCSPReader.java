@@ -1,3 +1,7 @@
+package constraintsolver;
+import constraintsolver.impl.BinaryConstraint;
+import constraintsolver.impl.BinaryTuple;
+
 import java.io.* ;
 import java.util.* ;
 
@@ -22,25 +26,29 @@ public final class BinaryCSPReader {
   /**
    * Main (for testing)
    */
-  public static void main(String[] args) throws impl.exception.QueueEmptyException {
+  public static void main(String[] args) throws IOException {
     if (args.length != 1) {
-      System.out.println("Usage: java BinaryCSPReader <file.csp>") ;
+      System.out.println("Usage: java constraintsolver.BinaryCSPReader <file.csp>") ;
       return ;
     }
     BinaryCSPReader reader = new BinaryCSPReader() ;
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
+	Solver solver = new Solver(prob, Heuristics.SDF, Heuristics.MINCONF);
+	solver.solve(true);
+	solver.printSol(false, "", "sdf#minconf");
+	solver.reset();
       //System.out.println(prob);
       //MACRunner mac = new MACRunner(prob);
-      //MACSolver fc = new MACSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
+      //constraintsolver.MACSolver fc = new constraintsolver.MACSolver(prob, constraintsolver.Heuristics.SDF, constraintsolver.Heuristics.MINCONF);
       //List<Integer> list = fc.getVarList();
       //System.out.println(Arrays.toString(list.toArray()));
-      FCSolver fc= new FCSolver(prob, Heuristics.SDF, Heuristics.MINCONF);
+      //constraintsolver.FCSolver fc= new constraintsolver.FCSolver(prob, constraintsolver.Heuristics.SDF, constraintsolver.Heuristics.MINCONF);
       //FCRunner fc = new FCRunner(prob);
-      //Solver fc = new Solver(prob);
+      //constraintsolver.Solver fc = new constraintsolver.Solver(prob);
 
       //List<Integer> vars = new ArrayList<>(fc.getVariables().keySet());
       //       Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
-      fc.doForwardCheck();
+      //fc.doForwardCheck();
       //fc.getAllArcs(vars.size());
       //fc.doMAC();
 //      System.out.println("reset");
@@ -80,8 +88,10 @@ public final class BinaryCSPReader {
 		    in.nextToken() ;
 	      domainBounds[i][1] = (int)in.nval ;
       }
+      String[] splits = fn.split("/");
+      String filename = splits[splits.length-1];
       ArrayList<BinaryConstraint> constraints = readBinaryConstraints() ;
-      BinaryCSP csp = new BinaryCSP(domainBounds, constraints) ;
+      BinaryCSP csp = new BinaryCSP(filename, domainBounds, constraints) ;
       // TESTING:
       // System.out.println(csp) ;
       inFR.close() ;

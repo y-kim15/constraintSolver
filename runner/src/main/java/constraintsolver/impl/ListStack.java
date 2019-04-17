@@ -1,4 +1,4 @@
-
+package constraintsolver.impl;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 //https://www.quora.com/How-does-one-implement-a-stack-using-an-ArrayList-Integer-in-Java

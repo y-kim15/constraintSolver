@@ -1,25 +1,20 @@
-
-import impl.exception.QueueEmptyException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+package constraintsolver.impl;
 
 /**
  * A simple Priority Queue implemented using doubly linked list data structure.
  * code from the package uk.ac.standrews.cs.cs2001.lecture10;
  */
-public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
+public class DLinkedListPriorityQueue implements IPriorityQueue {
     private DLinkedListNode head = new DLinkedListNode(new BinaryTuple(-1,0));//"Head");
     private DLinkedListNode tail = new DLinkedListNode(new BinaryTuple(-1,1));//"Tail");
-    private HashMap<BinaryTuple, Integer> queue = new HashMap<>();
+    //private HashMap<constraintsolver.impl.BinaryTuple, Integer> queue = new HashMap<>();
     private int current_size;
 
     /**
      * DoublyLinkedListPriorityQueue constructor.
      */
     public DLinkedListPriorityQueue() {
-        System.out.println("initialise");
+        //System.out.println("initialise");
         head.previous = tail.next;
         head.next = tail.previous;
         current_size = 0;
@@ -30,14 +25,20 @@ public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
     public DLinkedListNode getTail(){ return tail; }
 
     public boolean checkIfExists(BinaryTuple bt){
-        return queue.get(bt) != null;
+        DLinkedListNode start = head.next;
+        while(start != tail){
+            if(start.element == bt) return true;
+            start = start.next;
+        }
+        //return queue.get(bt) != null;
+        return false;
     }
 
     @Override
     public void enqueue(Comparable element) {
-        System.out.println("enqueue elements " + ((BinaryTuple) element).toString());
+        //System.out.println("enqueue elements " + ((constraintsolver.impl.BinaryTuple) element).toString());
         BinaryTuple bt = (BinaryTuple) element;
-        queue.put(bt,1);
+       // queue.put(bt,1);
         DLinkedListNode new_node = new DLinkedListNode(bt);
         if (isEmpty()) {
             new_node.previous = head;
@@ -70,20 +71,20 @@ public class DLinkedListPriorityQueue implements impl.IPriorityQueue {
     }
 
     @Override
-    public Comparable dequeue() throws QueueEmptyException {
+    public Comparable dequeue() {
         if (isEmpty()) {
-            throw new QueueEmptyException();
+            return null;
         }
         else if (current_size == 1) {
             BinaryTuple object = head.next.element;
-            queue.remove(object);
+            //queue.remove(object);
             clear();
             return object;
         }
         else {
             DLinkedListNode current = head.next;
             BinaryTuple object = current.element;
-            queue.remove(object);
+            //queue.remove(object);
             DLinkedListNode found = head.next;
             while (current != tail.previous) {
                 if (current.next.element.compareTo(object) > 0) {

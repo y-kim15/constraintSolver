@@ -1,4 +1,4 @@
-
+package constraintsolver.impl;
 /**
  * DLinkedListNode class from package.
  * uk.ac.standrews.cs.cs2001.lecture10;
@@ -23,7 +23,7 @@ public class DLinkedListNode {
      * DLinkedListNode constructor.
      * @param element element to be stored in the node.
      */
-    public DLinkedListNode(BinaryTuple element) {
+    DLinkedListNode(BinaryTuple element) {
 
         this(element, null, null);
     }

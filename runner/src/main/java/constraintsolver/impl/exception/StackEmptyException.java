@@ -1,4 +1,4 @@
-package impl.exception;
+package constraintsolver.impl.exception;
 
 
 /**

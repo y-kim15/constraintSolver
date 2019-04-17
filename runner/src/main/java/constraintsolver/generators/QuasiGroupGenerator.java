@@ -1,3 +1,4 @@
+package constraintsolver.generators;
 import java.io.*;
 import java.util.ArrayList;
 public final class QuasiGroupGenerator {
@@ -126,9 +127,10 @@ public final class QuasiGroupGenerator {
 
   
   public static void main (String[] args) throws NullPointerException, FileNotFoundException {
-    System.out.println("Usage: java QuasiGroupGenerator") ;
+    System.out.println("Usage: java constraintsolver.generators.QuasiGroupGenerator") ;
     int n = Integer.parseInt(args[1]);
-    PrintStream ps = new PrintStream("runner/src/main/resources/"+n+"_"+"QuasiGroup.csp");
+    System.out.println("n is " + n);
+    PrintStream ps = new PrintStream("runner/src/test/extra/"+n+"_"+"QuasiGroup.csp");
     System.setOut(ps);
     System.out.println("//QuasiGroupCompletion.") ;
     System.out.println("\n// "+(n*n)+" variables:\n"+(n*n)) ;

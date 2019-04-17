@@ -19,6 +19,11 @@
             <version>4.13-beta-2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>4.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -33,6 +38,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <mainClass>java.config</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -56,11 +64,19 @@
                             <value>${upper}</value>
                         </property>
                         <property>
-                            <name>testName</name>
-                            <value>${testName}</value>
+                            <name>printType</name>
+                            <value>${printType}</value>
+                        </property>
+                        <property>
+                            <name>order</name>
+                            <value>${order}</value>
+                        </property>
+                        <property>
+                            <name>dataDir</name>
+                            <value>${dataDir}</value>
                         </property>
                     </systemProperties>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
                 </configuration>
             </plugin>
         </plugins>

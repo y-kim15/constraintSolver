@@ -1,6 +1,11 @@
+package constraintsolver;
+import java.io.IOException;
 import java.util.*;
 
-import impl.exception.QueueEmptyException;
+import constraintsolver.impl.BinaryConstraint;
+import constraintsolver.impl.BinaryTuple;
+import constraintsolver.impl.DLinkedListPriorityQueue;
+import constraintsolver.impl.exception.QueueEmptyException;
 
 public class MACSolver extends Solver {
     private int depth = 0;
@@ -9,27 +14,27 @@ public class MACSolver extends Solver {
         super(csp, type, selType);
     }
 
-    public void doMAC() throws QueueEmptyException{
-        List<Integer> varList = getVarList();
-        System.out.println("got list for the first time");
-        varList.forEach(System.out::println);
-        start = System.nanoTime();
-        AC3(varList, EMPTY);
-        MAC3(varList);
-    }
+//    public void doMAC() throws constraintsolver.impl.exception.QueueEmptyException{
+//        List<Integer> varList = getVarList();
+//        System.out.println("got list for the first time");
+//        varList.forEach(System.out::println);
+//       // start = System.nanoTime();
+//        AC3(varList, EMPTY);
+//        MAC3(varList);
+//    }
 
     /**
      * returns all arcs in both directions, where there is a total
      * of v variables. When var == EMPTY, get all arcs for general enforcement again
      * @return array list of arcs saved as binary tuples
      */
-    public DLinkedListPriorityQueue getAllArcs(List<Integer> varList, int var) {
+    public DLinkedListPriorityQueue getAllArcs2(List<Integer> varList, int var) {
         DLinkedListPriorityQueue vars = new DLinkedListPriorityQueue();
-//        for(BinaryConstraint bc: getConstraints()){
+//        for(constraintsolver.impl.BinaryConstraint bc: getConstraints()){
 //            vars.enqueue(bc.getVars());
-//            vars.enqueue(new BinaryTuple(bc.getSecondVar(), bc.getFirstVar()));
+//            vars.enqueue(new constraintsolver.impl.BinaryTuple(bc.getSecondVar(), bc.getFirstVar()));
 //        }
-        if(var > EMPTY) {
+        if(var > Solver.EMPTY) {
             List<Integer> cons = getConnectionVar(var);
             // add to arc only if it is those which are not assigned
             for (int v2 : cons) {
@@ -55,7 +60,7 @@ public class MACSolver extends Solver {
         System.out.println("************888888888 Inside AC3");
         //DLinkedListPriorityQueue queue = new DLinkedListPriorityQueue();
         //int[] vars = getVariables().keySet().stream().mapToInt(i -> i).toArray();
-        DLinkedListPriorityQueue queue = getAllArcs(varList, var);
+        DLinkedListPriorityQueue queue = getAllArcs2(varList, var);
         Map<BinaryTuple, BinaryTuple[]> map = new HashMap<>();
         push(map);
         //stack.push(map);
@@ -70,7 +75,7 @@ public class MACSolver extends Solver {
             if(revise(false, getConstraintIndex(index), v1, v2)){
                 // domain changed, add more arcs
 //                System.out.println("done revise enqueue rest");
-                //ArrayList<BinaryConstraint> consts = getConstraints();
+                //ArrayList<constraintsolver.impl.BinaryConstraint> consts = getConstraints();
                 List<Integer> connected = getConnectionVar(v1);
                 for(int vv : connected){
                     if(vv == v2) continue;// || varList.indexOf(vv) == EMPTY) continue;
@@ -129,19 +134,19 @@ public class MACSolver extends Solver {
 //        System.out.println("assigned - var: " + var + ", value: " + val);
 
         if(completeAssignment()){
-            end = System.nanoTime();
+            //end = System.nanoTime();
             System.out.println("complete");
-            print_sol();
-            return EXIT;
+            //printSol();
+            return Solver.EXIT;
         }
 
         else if(AC3(varList, var)){
 //            System.out.println("AC held, all supported, can proceed");
             varList.remove(Integer.valueOf(var));
-            last = var;
+            //last = var;
 //            System.out.println("removed the var, do MAC3");
             code = MAC3(varList);
-            if(code > 0) return EXIT;
+            if(code > 0) return Solver.EXIT;
         }
         System.out.println("recover, undo pruning, unassign value " + val + " to var " + var);
         undoPruning();
@@ -160,7 +165,7 @@ public class MACSolver extends Solver {
             if(AC3(varList, var)) {
 //                System.out.println("do MAC3");
                 code = MAC3(varList);
-                if(code > 0) return EXIT;
+                if(code > 0) return Solver.EXIT;
             }
             System.out.println("undopruning");
             undoPruning();
@@ -174,16 +179,16 @@ public class MACSolver extends Solver {
             }
         }
         System.out.println("reached end");
-//        lastTry = new BinaryTuple(var,EMPTY);
+//        lastTry = new constraintsolver.impl.BinaryTuple(var,EMPTY);
 //        MAC3(varList);
         return 0;
 
     }
 
-    @Override
-    protected void print_sol() {
+
+    protected void printSol() throws IOException {
         System.out.println("=================== MAC Output ===============");
-        super.print_sol();
+        super.printSol(false, "", "");
         System.out.println("Depth: (no of mac calls) " + depth);
     }
 }
