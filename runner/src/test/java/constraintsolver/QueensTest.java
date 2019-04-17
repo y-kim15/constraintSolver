@@ -30,17 +30,16 @@ public class QueensTest {
     @Parameterized.Parameters()
     public static Iterable<? extends Object> config() throws IOException {
         String wd = System.getProperty("user.dir");
-        //System.out.println("working directory is "+ wd);
         workdir = wd;
         int low, up;
         if(System.getProperty("lower").isEmpty()) low = lb;
         else {
-            low = (int) Integer.valueOf(System.getProperty("lower"));
+            low = Integer.valueOf(System.getProperty("lower"));
             lb = low;
         }
         if(System.getProperty("upper").isEmpty()) up = ub;
         else{
-            up = (int) Integer.valueOf(System.getProperty("upper"));
+            up = Integer.valueOf(System.getProperty("upper"));
             ub = up;
         }
         List<String> ints = new ArrayList<>();
@@ -75,6 +74,7 @@ public class QueensTest {
     private static boolean type;
     private String output;
     private String input;
+    private boolean exists;
 
     public QueensTest(String len, String printType, String output){
        this.len = len;
@@ -96,30 +96,22 @@ public class QueensTest {
 
         input = fn;
         System.out.println("Test Input: "+ prob.getName()+"---------------");
-        solver = new Solver(prob, Heuristics.DOMDEG, Heuristics.ASCEND);
+        solver = new Solver(prob, Heuristics.SDF, Heuristics.ASCEND);
     }
 
     @Test
     public void solveFC(){
-        //System.out.println("FC===================================");
-        solver.solve(true);
-        //solver.reset();
-//        System.out.println("MAC=======================================");
-//        solver.solve(false);
-//        System.out.println("----------------------------------------");
+       exists = solver.solve(true);
     }
 
     @Test
     public void solveMAC(){
-        //System.out.println("MAC=======================================");
-        solver.solve(false);
-        //System.out.println("----------------------------------------");
+        exists = solver.solve(false);
     }
 
     @After
     public void printReset() throws IOException{
-        //System.out.println("fullpath is "+ output);
-        solver.printSol(type, output,"domdeg#asc");
+        solver.printSol(exists, type, output,"sdf#asc");
         solver.reset();
         File f = new File(input);
         f.delete();

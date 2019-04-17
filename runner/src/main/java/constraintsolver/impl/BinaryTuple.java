@@ -29,10 +29,24 @@ public final class BinaryTuple implements Comparable {
     else return (val1 == v2) & (val2 == v1);
   }
 
+  /**
+   * check if both variables exist in any order
+   * @param v1 first var
+   * @param v2 second var
+   * @return if true
+   */
   public boolean both(int v1, int v2){
     return ((val1 == v1) && (val2 == v2)) || ((val1 == v2) && (val2 == v1));
   }
 
+  /**
+   * check if the variable given is the start of the arc
+   * as indicated by first
+   * @param v1 variable
+   * @param first T for reading L->R, F for reading R -> L
+   *              of the constraint
+   * @return if true
+   */
   public boolean has(int v1, boolean first){
     if(first) return (val1==v1);
     else return ((val2)==v1);

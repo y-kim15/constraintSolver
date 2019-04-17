@@ -14,9 +14,14 @@ public final class QuasiGroupGenerator {
           System.out.println(val1+", "+val2) ;
   }
 
+  /**
+   * file reading format for reading instances of .pls files from
+   * resource: https://github.com/HelgeS/lsencode
+   * @param fn file path
+   * @return 2d array of the grid values
+   */
   private static int[][] read2(String fn){
     try{
-      //System.out.println("started reading second .pls format!");
       inFR = new FileReader(fn) ;
       in = new StreamTokenizer(inFR) ;
       in.ordinaryChar('o') ;
@@ -27,16 +32,11 @@ public final class QuasiGroupGenerator {
       in.wordChars('-', '-');
       for(int i = 0; i < 6; i++) in.nextToken() ;    // space
       int n = (int)in.nval ;
-      //in.nextToken(); // space in next line
       int[][] values = new int[n][n] ;
-      //in.nextToken();                             // '|'
       for (int i = 0; i < n; i++) {
-        //System.out.println((i+1)+"th row");
         for(int j = 0; j < n; j++) {
           int val = 0;
 
-          //in.nextToken();
-          //in.nextToken();  //  3 x spaces
           int token = in.nextToken(); // value (check if it is -s)
           if(token != (StreamTokenizer.TT_NUMBER)){
             //System.out.println("its -1");
@@ -44,24 +44,12 @@ public final class QuasiGroupGenerator {
             in.nextToken();
           }
           else{
-            //in.nextToken();
-            //System.out.println("else add one!");
            val = ((int) in.nval);
             values[i][j] = ++val;
           }
-          //System.out.println((j+1)+"th col val: " + values[i][j]);
-                                            // ','
-          //in.nextToken();
+
         }
-        //in.nextToken();                               // '|'
       }
-//      for(int i=0; i < n; i++){
-//        for(int j=0; j < n; j++){
-//          System.out.println(values[i][j]);
-//        }
-//      }
-      // TESTING:
-      // System.out.println(csp) ;
       inFR.close() ;
       return values;
 
@@ -71,9 +59,14 @@ public final class QuasiGroupGenerator {
     return null;
   }
 
+  /**
+   * file reading format for reading instances of .dzn files from
+   * resource : http://www.csplib.org/Problems/prob067/data/
+   * @param fn
+   * @return
+   */
   private static int[][] read(String fn){
     try {
-      //System.out.println("started reading");
       inFR = new FileReader(fn) ;
       in = new StreamTokenizer(inFR) ;
       in.ordinaryChar('|') ;
@@ -92,15 +85,12 @@ public final class QuasiGroupGenerator {
       int n = (int)in.nval ;
       in.nextToken();
       for(int i = 0; i < 7; i++) in.nextToken();
-      //System.out.println("n is " + n);
       int[][] values = new int[n][n] ;
       in.nextToken();                             // '|'
       for (int i = 0; i < n; i++) {
-        //System.out.println((i+1)+"th row");
         for(int j = 0; j < n; j++) {
           in.nextToken();                                   //  value
           values[i][j] = (int) in.nval;
-          //System.out.println((j+1)+"th col val: " + values[i][j]);
           in.nextToken();                                   // ','
           //in.nextToken();
         }
@@ -109,13 +99,6 @@ public final class QuasiGroupGenerator {
       in.nextToken();
       in.nextToken();
       in.nextToken();
-//      for(int i=0; i < n; i++){
-//        for(int j=0; j < n; j++){
-//          System.out.println(values[i][j]);
-//        }
-//      }
-      // TESTING:
-      // System.out.println(csp) ;
       inFR.close() ;
       return values;
     }

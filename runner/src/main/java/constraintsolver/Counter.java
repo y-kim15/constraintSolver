@@ -7,6 +7,11 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+/**
+ * Counter class to collect statistics and
+ * print out in a readable format
+ */
 public class Counter {
     private boolean type;
     private String name;
@@ -14,7 +19,6 @@ public class Counter {
     private long end;
     private int node;
     private int extra;
-
 
     // true for FC, false for MAC
     Counter(boolean type) {
@@ -27,21 +31,29 @@ public class Counter {
         extra = 0;
     }
 
-    public void setStart(){
+    void setStart(){
         start = System.nanoTime();
     }
 
-    public void setEnd(){
+    void setEnd(){
         end = System.nanoTime();
     }
 
     // true for node, false for extra
-    public void increment(boolean type){
+    void increment(boolean type){
         if(type) node++;
         else extra++;
     }
-    //printtype true == print in csv
-    public void printStats(String prob, boolean printType, String fn, String heuristics) throws IOException {
+
+    /**
+     * called by printSol of the solver, prints out statistics
+     * @param prob name of the  problem instance to record
+     * @param printType printing type (T for statistics only in csv, F for full output with soln)
+     * @param fn filepath to the output
+     * @param heuristics type of heuristics
+     * @throws IOException error in the case of invalid file path
+     */
+    void printStats(boolean exists, String prob, boolean printType, String fn, String heuristics) throws IOException {
         double milliseconds  = (double)(end - start) / 1000000.0;
         double seconds = milliseconds / 1000;
         String var, val;
@@ -56,6 +68,7 @@ public class Counter {
         File file = new File(fn);
         FileWriter fr = new FileWriter(file, true);
         if(!printType) {
+            // write in a txt file
             fr.write("+++++++++++++++++" + prob + "+++++++++++++++++++++\n");
             if (type) {
                 fr.write("=================== FC Output ===============\n");
@@ -73,11 +86,14 @@ public class Counter {
             fr.close();
         }
         else{
+            // write a rwo entry to csv
             String solver = "FC";
             if(!type) solver = "MAC";
             BufferedWriter br = new BufferedWriter(fr);
+            String extra = "";
+            if(!exists) extra = ",no soln";
              br.write(prob + "," + solver + "," + String.format("%.2f", milliseconds) + "," + String.format("%.2f", seconds)
-                    + "," + node + "," + extra + ","+ var +"," + val + "\n");
+                    + "," + node + "," + extra + ","+ var +"," + val + extra + "\n");
 
             br.close();
             fr.close();

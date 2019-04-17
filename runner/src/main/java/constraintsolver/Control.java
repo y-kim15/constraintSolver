@@ -7,11 +7,16 @@ import java.util.*;
 
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.toMap;
+
+/**
+ * Control class including functions for finding static and
+ * dynamic variable ordering heuristics
+ */
 public class Control {
     private static final int EMPTY = -1;
     Heuristics type;
     Heuristics selType;
-    boolean fixed;
+    private boolean fixed;
 
     Control(Heuristics type, Heuristics selType, boolean fixed){
         this.type = type;
@@ -23,6 +28,8 @@ public class Control {
 
     /**
      * static ordering - maximum degree
+     * @param variables variables of the problem
+     * @param connections map of variable with list of connected variables
      * @return list of static ordered variables
      */
     public List<Integer> orderByDeg(HashMap<Integer, Integer> variables, HashMap<Integer, List<Integer>> connections){
@@ -32,14 +39,6 @@ public class Control {
             int deg = connections.get(v1).size();
             varConstCounts.put(v1, deg);
         }
-//        for(constraintsolver.impl.BinaryConstraint bc : constraints){
-//            int v1 = bc.getFirstVar();
-//            int v2 = bc.getSecondVar();
-//            if(varConstCounts.containsKey(v1)) varConstCounts.put(v1, varConstCounts.get(v1)+1);
-//            else varConstCounts.put(v1, 1);
-//            if (varConstCounts.containsKey(v2)) varConstCounts.put(v2, varConstCounts.get(v2) + 1);
-//            else varConstCounts.put(v2, 1);
-//        }
         // sort by decreasing order of values
         HashMap<Integer, Integer> sorted = varConstCounts
                 .entrySet()
@@ -56,53 +55,38 @@ public class Control {
      * select the next variable to assign the value to by
      * maximum cardinality rule : from the current value, choose the variable
      * it's connected largest number with amongst already assigned
+     * @param variables of the problem
+     * @param connections map of variable with list of connected variables
      * @return static ordering list of variables
      */
     public List<Integer> orderByCard(HashMap<Integer, Integer> variables, HashMap<Integer, List<Integer>> connections){
         List<Integer> varList = new ArrayList<>(variables.keySet());
-//        System.out.println("variables: ");
-//        System.out.println(Arrays.toString(varList.toArray()));
-
-        //HashMap<Integer, Integer> cardCounts = new HashMap<>();
         List<Integer> ordered = new ArrayList<>();
         double randomDouble = Math.random() * (varList.size());
         int randomInt = (int) randomDouble;
         int var = varList.get(randomInt);
-//        System.out.println("first: " + var);
         ordered.add(var);
         while (ordered.size() < varList.size()){
             List<Integer> values = connections.get(var);
-//            System.out.println("values connected with var: " + var);
-            for(int vv: values) System.out.println(vv);
             int curN = -1;
             for(int v: values){
                 if(ordered.indexOf(v) > EMPTY) continue;
-                //if(varList.indexOf(v) == EMPTY) continue;
                 List<Integer> vals = connections.get(v);
                 int N = 0;
                 for(int v1: vals){
                     if(ordered.indexOf(v1) > EMPTY){
-//                        System.out.println("ready-assigned variable");
                         N++;
                     }
                 }
-//                System.out.println("for adj var: " + v + ", have " + N + " variables that are ready assigned");
                 if(curN < 0 || N > curN){
-//                    System.out.println("larger so set this to be top");
                     curN = N;
                     var = v;
                 }
             }
             ordered.add(var);
-
-            //cardCounts.put(var, curN);
         }
-//        System.out.println("END");
         Set<Integer> s = new HashSet<>(ordered);
         if(ordered.size() != s.size()) System.out.println("LENGTHS DIFFER!!");
-        // sort by descending order
-        //HashMap<Integer, Integer> sorted = sort(cardCounts, false);
-        //return new ArrayList<>(sorted.keySet());
         return ordered;
     }
 
@@ -130,8 +114,6 @@ public class Control {
                 in.nextToken() ;
                 list.add((int)in.nval);
             }
-            // TESTING:
-            // System.out.println(csp) ;
             inFR.close() ;
         }
         catch (FileNotFoundException e) {System.out.println(e);}
@@ -141,13 +123,17 @@ public class Control {
     }
 
     /**
-     * brelax implementation, pass the value of var of currently assigned
+     * brelaz implementation, pass the value of var of currently assigned
      * then select the variable with max degree in constraint sub-graph of future variables
      * First var should be selected by SDF! Use varList to check if the variables in bt are not assigned.
      * @param varList list of unassigned variables including var
+     * @param domains domain values
+     * @param variables of the problem
+     * @param connections map of variable with list of connected variables
      * @return next var
      */
-    public int brelaz(List<Integer> varList, int[][] domains,HashMap<Integer, Integer> variables, HashMap<Integer, List<Integer>> connections){
+    public int brelaz(List<Integer> varList, int[][] domains,HashMap<Integer, Integer> variables,
+                      HashMap<Integer, List<Integer>> connections){
         HashMap<Integer, Integer> map = sortByDomain(varList, domains, variables);
         int i = 0;
         List<Integer> two = new ArrayList<>();
@@ -173,49 +159,19 @@ public class Control {
             return val;
         }
         return two.get(0);
-
-//        for (int v1 : varList) {
-//            int nDeg = 0;
-////            HashSet cons = new HashSet(connections.get(v1));
-////            System.out.println("cons size before: " + cons.size());
-////            cons.retainAll(varList);
-////            nDeg = cons.size();
-////            System.out.println("cons size after: " + cons.size());
-//            for(int cons : connections.get(v1)){
-//                if(varList.indexOf(cons) > EMPTY) nDeg++;
-//            }
-//            for (constraintsolver.impl.BinaryConstraint bt : constraints) {
-//                constraintsolver.impl.BinaryTuple vars = bt.getVars();
-//                if (varList.indexOf(vars.getVal1()) == EMPTY || varList.indexOf(vars.getVal2()) == EMPTY) continue;
-//                if (vars.has(v1, true) || bt.getVars().has(v1, false)) nDeg++;
-//            }
-//            if (maxDeg == EMPTY || nDeg > maxDeg) {
-//                maxDeg = nDeg;
-//                val = v1;
-//            }
-//        }
-//        if(val == var) return  var;
-//        return val;
-
     }
 
     /**
      * dynamic ordering of variable by descending order of degree
      * @param varList currently unassigned variables (if includes current var, ignore)
+     * @param connections map of variable with list of connected variables
      * @return sorted by degree with future variables in HashMap<Variable, Degree> pairs
      */
     public HashMap<Integer, Integer> sortByDegree(List<Integer> varList, HashMap<Integer, List<Integer>> connections){
         HashMap<Integer, Integer> degCounts = new HashMap<>();
         for (int v1 : varList) {
-            //if(v1 == var) continue;
             int nDeg = 0;
             nDeg = connections.get(v1).size();
-//            for (constraintsolver.impl.BinaryConstraint bt : constraints) {
-//                constraintsolver.impl.BinaryTuple vars = bt.getVars();
-//                // check if it is assigned, if so bypass
-//                if (varList.indexOf(vars.getVal1()) == EMPTY || varList.indexOf(vars.getVal2()) == EMPTY) continue;
-//                if (vars.has(v1, true) || bt.getVars().has(v1, false)) nDeg++;
-//            }
             degCounts.put(v1, nDeg);
         }
         // sort in descending order
@@ -234,9 +190,11 @@ public class Control {
      * sorts variable by the size of domain available for each (will be for variables which are nto assigned)
      * @param varList variables to be sorted, currently unassigned
      * @param domains current domain for all variables
+     * @param variables list of variables with its index indicator for domain array
      * @return Hashmap of variable, number of available values count pair
      */
-    protected HashMap<Integer, Integer> sortByDomain(List<Integer> varList, int[][] domains, HashMap<Integer, Integer> variables){
+    protected HashMap<Integer, Integer> sortByDomain(List<Integer> varList, int[][] domains,
+                                                     HashMap<Integer, Integer> variables){
         //System.out.println("-------Sort By Domain---------");
         HashMap<Integer, Integer> varCounts = new HashMap<>();
         for(int v :varList){
@@ -257,8 +215,6 @@ public class Control {
                 .collect(
                         toMap(e -> e.getKey(), e -> e.getValue(), (e1, e2) -> e2,
                                 LinkedHashMap::new));
-        List<Integer> sortedVars = new ArrayList<>(sorted.keySet());
-        //System.out.println("------sorted------");
         return sorted;//sortedVars;
     }
 
@@ -266,25 +222,22 @@ public class Control {
      * find the next value which gives the minimum quotient of dom size/degree
      * @param varList varlist with currently unassigned variables
      * @param domains current domains for all variables
+     * @param variables of the problem
+     * @param connections map of variable with list of connected variables
      * @return the next variable to assign the value to
      */
-    public int domDeg(List<Integer> varList, int[][] domains, HashMap<Integer, Integer> variables, HashMap<Integer, List<Integer>> connections){
+    public int domDeg(List<Integer> varList, int[][] domains, HashMap<Integer, Integer> variables,
+                      HashMap<Integer, List<Integer>> connections){
         HashMap<Integer, Integer> dom = sortByDomain(varList, domains, variables);
-//        System.out.println("DOMAIN SORTED");
-//        for(int key : dom.keySet()) System.out.println("key: " + key + ", val: " + dom.get(key));
         HashMap<Integer, Integer> deg = sortByDegree(varList, connections);
-//        System.out.println("DEGREE SORTED");
-//        for(int key : deg.keySet()) System.out.println("key: " + key + ", val: " + deg.get(key));
         double minRatio = -1;
         int minVar = -1;
         int times = 0;
         for(int vv : dom.keySet()){
-            //if(vv == var) continue;
             double ratio = dom.get(vv)/((1.0)*(deg.get(vv)));
             if(minRatio < 0 || minRatio > ratio){
                 minRatio = ratio;
                 minVar = vv;
-
             }
             times++;
             if (times == 2) break;

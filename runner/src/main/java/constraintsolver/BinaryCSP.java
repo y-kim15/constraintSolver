@@ -24,25 +24,13 @@ public final class BinaryCSP {
     return result.toString() ;
   }
 
-  public String getName(){ return name; }
-
-  public int getNoVariables() {
-    return domainBounds.length ;
-  }
-  
-  public int getLB(int varIndex) {
-    return domainBounds[varIndex][0] ;
-  }
-  
-  public int getUB(int varIndex) {
-    return domainBounds[varIndex][1] ;
-  }
+  String getName(){ return name; }
   
   public ArrayList<BinaryConstraint> getConstraints() {
     return constraints ;
   }
 
-  public int[][] getDomainBounds(){ return domainBounds; }
+  int[][] getDomainBounds(){ return domainBounds; }
 
   /**
    * find notations used for variables and save the sorted hashmap with

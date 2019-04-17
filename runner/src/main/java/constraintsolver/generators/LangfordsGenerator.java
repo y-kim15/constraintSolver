@@ -11,7 +11,8 @@ public final class LangfordsGenerator {
     }
     int k = Integer.parseInt(args[0]) ;
     int n = Integer.parseInt(args[1]) ;
-    PrintStream ps = new PrintStream("runner/src/test/extra/langfords"+k+"_"+ + n + ".csp");
+    String wd = System.getProperty("user.dir");
+    PrintStream ps = new PrintStream(wd + "/src/test/extra/langfords"+k+"_"+ + n + ".csp");
     System.setOut(ps);
     System.out.println("//Langford, k = "+k+" n = "+n) ;
     

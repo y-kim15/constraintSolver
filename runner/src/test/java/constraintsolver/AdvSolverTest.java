@@ -25,7 +25,6 @@ public class AdvSolverTest {
     private static String workdir;
     private static Solver fc;
     private static String[] inputs;
-    private PrintStream ps;
     private static String print = "N";
     private static String fullPath;
     private static String ordering = "def";
@@ -33,14 +32,12 @@ public class AdvSolverTest {
     @Parameterized.Parameters
     public static Iterable<? extends Object[]> config() throws IOException{
         String wd = System.getProperty("user.dir");
-        System.out.println("working directory is "+ wd);
         workdir = wd;
         String dir = "";
         if(System.getProperty("dataDir").isEmpty()) dir = "resources";
         else dir = System.getProperty("dataDir");
         Path path = Paths.get(wd, "src/test/"+dir);
         String absPath = path.toAbsolutePath().toString();
-        System.out.println("path abs is " + path.toAbsolutePath().toString());
         File resources = new File(path.toAbsolutePath().toString());
         inputs = resources.list();
         List<String> files = new ArrayList<>();
@@ -50,7 +47,6 @@ public class AdvSolverTest {
             files.add(absPath+"/"+fs);
             num++;
         }
-        Object[] obj = files.toArray();
         String type, order;
         if(System.getProperty("printType").isEmpty()) type = print;
         else type = System.getProperty("printType");
@@ -87,7 +83,7 @@ public class AdvSolverTest {
             heuristics_val = new Heuristics[]{Heuristics.ASCEND, Heuristics.MINCONF};
             var = 3; val = 2;
         }
-        else{ // if(ordering.equals("def")){
+        else{
             heuristics_var = new Heuristics[]{Heuristics.SDF};
             heuristics_val = new Heuristics[]{Heuristics.ASCEND};
             var = 1; val = 1;
@@ -102,14 +98,14 @@ public class AdvSolverTest {
         return newList;
     }
 
-    //@Parameterized.Parameter
     private String fn;
     private static boolean type;
     private String output;
     private Heuristics var;
     private Heuristics val;
+    private boolean exists;
 
-    public AdvSolverTest(String fn, String printType, String output, Heuristics var, Heuristics val) throws IOException{
+    public AdvSolverTest(String fn, String printType, String output, Heuristics var, Heuristics val) {
         this.fn = fn;
         type = (printType.equals("Y"));
         this.output = output;
@@ -120,7 +116,7 @@ public class AdvSolverTest {
     }
 
     @BeforeClass
-    public static void makeReader() throws IOException {
+    public static void makeReader() {
         System.out.println("FC Solver Unit Tests===================");
         reader = new BinaryCSPReader();
 
@@ -137,26 +133,27 @@ public class AdvSolverTest {
         System.out.println("Test Input: "+ filename+"---------------");
 
         fc = new Solver(prob, var, val);
-        //fc.setNew(prob);
 
     }
 
     @Test
     public void solveFC(){
-        fc.solve(true);
+        System.out.println("FC =========================================");
+        exists = fc.solve(true);
         if(!type) System.out.println("----------------------------------------");
     }
 
     @Test
     public void solveMAC(){
-        fc.solve(false);
+        System.out.println("MAC ==========================================");
+        exists = fc.solve(false);
         if(!type) System.out.println("----------------------------------------");
     }
 
     @After
     public void printReset() throws IOException{
         System.out.println("fullpath is "+ output);
-        fc.printSol(type, output, getHeuristics(var, val));
+        fc.printSol(exists, type, output, getHeuristics(var, val));
         fc.reset();
     }
 
@@ -172,7 +169,6 @@ public class AdvSolverTest {
         }
         if(val == Heuristics.ASCEND) str+="asc";
         else str+="minconf";
-        //if(str.equals("sdf#asc")) return "";
         return str;
     }
 

@@ -5,10 +5,13 @@ import constraintsolver.impl.BinaryTuple;
 import java.io.* ;
 import java.util.* ;
 
+/**
+ * encoded heuristics to be used as enum
+ */
 enum Heuristics {
     MAXDEG(-3), MAXCAR(-1), SDF(3), BRELAZ(4), DOMDEG(5), ASCEND(6), MINCONF(7);
     private final int val;
-    private Heuristics(int val){
+    Heuristics(int val){
         this.val = val;
     }
     public int getVal(){ return val;}
@@ -33,32 +36,12 @@ public final class BinaryCSPReader {
     }
     BinaryCSPReader reader = new BinaryCSPReader() ;
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
-	Solver solver = new Solver(prob, Heuristics.SDF, Heuristics.MINCONF);
-	solver.solve(true);
-	solver.printSol(false, "", "sdf#minconf");
+	Solver solver = new Solver(prob, Heuristics.SDF, Heuristics.ASCEND);
+	boolean found = solver.solve(false);
+	if(found) System.out.println("found");
+	else System.out.println("no soln");
+	solver.printSol( found, false, "", "sdf#asc");
 	solver.reset();
-      //System.out.println(prob);
-      //MACRunner mac = new MACRunner(prob);
-      //constraintsolver.MACSolver fc = new constraintsolver.MACSolver(prob, constraintsolver.Heuristics.SDF, constraintsolver.Heuristics.MINCONF);
-      //List<Integer> list = fc.getVarList();
-      //System.out.println(Arrays.toString(list.toArray()));
-      //constraintsolver.FCSolver fc= new constraintsolver.FCSolver(prob, constraintsolver.Heuristics.SDF, constraintsolver.Heuristics.MINCONF);
-      //FCRunner fc = new FCRunner(prob);
-      //constraintsolver.Solver fc = new constraintsolver.Solver(prob);
-
-      //List<Integer> vars = new ArrayList<>(fc.getVariables().keySet());
-      //       Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
-      //fc.doForwardCheck();
-      //fc.getAllArcs(vars.size());
-      //fc.doMAC();
-//      System.out.println("reset");
-//      fc.reset();
-//      System.out.println("=================================================================================second run");
-//      fc.doMAC();
-      //mac.MAC3(vars);
-//      FCRunner fc = new FCRunner(prob);
-//      List<Integer> vars = Arrays.stream(fc.getVariables()).boxed().collect(Collectors.toList());
-//      fc.FC(vars);
   }
 
   /**

@@ -19,8 +19,8 @@ import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.toMap;
 
 public class Solver{
-    protected static final int EMPTY = -1;
-    protected static final int EXIT = 2;
+    private static final int EMPTY = -1;
+    private static final int EXIT = 2;
     private BinaryCSP csp;
     private HashMap<Integer, Integer> variables;
     private int[] assigned;
@@ -38,35 +38,50 @@ public class Solver{
 
     Solver(BinaryCSP csp, Heuristics type, Heuristics selType){
         this.csp = csp;
-        //domainBounds = csp.getDomainBounds();
         constraints = csp.getConstraints();
         variables = csp.getVariables();
         num = variables.size();
-                //new int[csp.getNoVariables()];
-        //for(int i = 0; i < csp.getNoVariables(); i++){ variables[i] = i; }
         writeDomain();
         assigned = new int[num];
         for(int i = 0; i < num; i++){ assigned[i] = EMPTY; }
         setConnections();
-        //controlType = type;
         if(type.getVal() < EMPTY) control = new Control(type, selType,true);
         else control = new Control(type, selType,false);
     }
 
-    public void solve(boolean type){
+    /**
+     * main method to be called to run the solver
+     * @param type T for FC, F for MAC algorithm to use
+     * @return boolean denoting whether solution exists.
+     */
+    boolean solve(boolean type){
         counter = new Counter(type);
         if(type) doForwardCheck();
         else doMAC();
-        //reset();
-
+        if (checkIfFound()) return true;
+        else{
+            counter.setEnd();
+            return false;
+        }
     }
 
-    boolean getFail(){ return fail; }
-    void setFail(boolean fail){ this.fail = fail; }
+    /**
+     * checks if the solution is found having
+     * the method has returned by verifying the
+     * values filled in the assignment
+     * @return boolean indicator
+     */
+    private boolean checkIfFound(){
+        return completeAssignment();
+    }
+
+
+    private boolean getFail(){ return fail; }
+    private void setFail(boolean fail){ this.fail = fail; }
 
     ArrayList<BinaryConstraint> getConstraints(){ return constraints; }
     List<Integer> getConnectionVar(int var){ return connections.get(var); }
-    // ***
+
 
     /**
      * write domain using the domain bounds, creates ragged array
@@ -115,7 +130,7 @@ public class Solver{
      * @param v2 second variable
      * @return index of it located/ -1 if invalid (doesn't exists)
      */
-    protected int getConstraint(int v1, int v2){
+    private int getConstraint(int v1, int v2){
         int i = 0;
         for(BinaryConstraint bc: constraints){
             if(bc.checkVars(v1,v2)) return i;
@@ -124,8 +139,11 @@ public class Solver{
         return EMPTY;
     }
 
-    // first initialisation varlist call!
-    protected List<Integer> getVarList(){
+    /**
+     * initialises variable list for the first time according to the heuristics
+     * @return variable list
+     */
+    private List<Integer> getVarList(){
         List<Integer> varList = new ArrayList<>(getVariables().keySet());
         switch (control.type){
             case MAXDEG:
@@ -135,6 +153,7 @@ public class Solver{
                 varList = control.orderByCard(variables, connections);
                 break;
             default:
+                // for all other dynamic ordering, initialise in sdf ordering first
                 varList = sortVarList(varList);
                 break;
         }
@@ -142,16 +161,18 @@ public class Solver{
     }
 
 
-    protected int selectVar(List<Integer> varList){
-        int nextVar = -1;
+    /**
+     * returns selected variable according to the dynamic variable selection for intermediate
+     * variable selection calls
+     * @param varList current list of unassigned variables
+     * @return next variable chosen
+     */
+    private int selectVar(List<Integer> varList){
+        int nextVar;
         switch (control.type){
             case SDF:
                 varList = sortVarList(varList);
                 nextVar = varList.get(0);
-//                if(lastTry != null  && lastTry.getVal2() == EMPTY && lastTry.getVal1() == varList.get(0) && varList.size()>1){
-//                    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-//                    nextVar = varList.get(1);
-//                }
                 break;
             case BRELAZ:
                 nextVar = control.brelaz(varList, domains, variables, connections);
@@ -160,6 +181,7 @@ public class Solver{
                 nextVar = control.domDeg(varList, domains, variables, connections);
                 break;
             default:
+                // for all others return the first element
                  nextVar = varList.get(0);
                  break;
         }
@@ -173,7 +195,7 @@ public class Solver{
      * @param varList a list of unassigned variables
      * @return sorted varList
      */
-    protected List<Integer> sortVarList(List<Integer> varList){
+    private List<Integer> sortVarList(List<Integer> varList){
         //System.out.println("-------Sort Var List---------");
         HashMap<Integer, Integer> varCounts = new HashMap<>();
         for(int i = 0; i < varList.size(); i++){
@@ -195,15 +217,8 @@ public class Solver{
                 .collect(
                         toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
                                 LinkedHashMap::new));
-                //.sorted(Collections.reverseOrder(comparingByValue()))
 
         List<Integer> sortedList = new ArrayList<>(sorted.keySet());
-//        int ind = 0;
-//        for(Integer key : sorted.keySet()) {
-//            sortedList.add(ind++, varList.get(key));
-//        }
-        //Collections.sort(sortedList);
-        //System.out.println("------sorted------");
         return sortedList;
     }
 
@@ -214,8 +229,7 @@ public class Solver{
      * @param var variable interested
      * @return value to assign
      */
-    protected int selectVal(List<Integer> varList, int var){
-        //System.out.println("select val for var: " + var);
+    private int selectVal(List<Integer> varList, int var){
         int val = -1;
         if(control.selType == Heuristics.MINCONF) {
             val = minConflicts(varList, var);
@@ -224,7 +238,6 @@ public class Solver{
             int[] domain = domains[variables.get(var)];//domains[var];
             Arrays.sort(domain);
             // assuming that it is already sorted in -1, -1, ... some values order
-
             int check = EMPTY;
             if (lastTry != null && lastTry.getVal1() == var) check = lastTry.getVal2();
             for (int i = 0; i < domain.length; i++) {
@@ -243,15 +256,13 @@ public class Solver{
      * @param val value to remove from the domain of var
      * @return the index at which the value was located in domains array of var
      */
-    protected int removeVal(int var, int val){
-        //System.out.println("Inside remove");
+    private int removeVal(int var, int val){
         int ind = -1;
-        int[] dom = domains[variables.get(var)];//domains[var];
-        // delete val from domain, and sort in ascending order
+        int[] dom = domains[variables.get(var)];
+        // delete val from domain
         for(int i = 0; i < dom.length; i++){
             if(dom[i] == val){
                 dom[i] = EMPTY;
-                //Arrays.sort(domains[var]);
                 ind = i;
                 break;
             }
@@ -269,12 +280,11 @@ public class Solver{
      * previous binary tuples for each binary constraint and domain values for
      * futureVar
      */
-    protected void undoPruning(){
+    private void undoPruning(){
         Map<BinaryTuple, BinaryTuple[]> pruned = stack.pop();
         for (Map.Entry<BinaryTuple, BinaryTuple[]> pair : pruned.entrySet()) {
             for(BinaryConstraint bc: constraints){
                 if(pair.getKey().both(bc.getFirstVar(), bc.getSecondVar())){
-                    //System.out.println("this is the right constraint to add bt to");
                     bc.addTuples(pair.getValue());
                 }
             }
@@ -324,51 +334,39 @@ public class Solver{
 
     /**
      * revise domains of x_i and does pruning!
-     * @param type T for FC and F for MAC
+     * @param type T for FC and F for MAC (since MAC requires indicator
+     *             of whether the domain has been emptied to be passed to AC3 method call
      * @param bt binary constraint of interest
      * @param var1 x_i
      * @param var2 x_j
      * @return boolean denoting if the domain of x_i has changed
      */
-    protected boolean revise(boolean type, BinaryConstraint bt, int var1, int var2) {
-//        System.out.println("===== ReviseFC ======");
-//        System.out.println("Arc revision in REVISEFC - var1: " + var1 + ", var2: " + var2);
-        int[] d1 = domains[variables.get(var1)];//domains[var1];
-//        System.out.println("d1 domains");
-        //for(int v: d1) System.out.println(v);
-        int[] d2 = domains[variables.get(var2)];//domains[var2];
-//        System.out.println("d2 domains");
-        //for(int v: d2) System.out.println(v);
-        boolean first = true;
+    private boolean revise(boolean type, BinaryConstraint bt, int var1, int var2) {
+        int[] d1 = domains[variables.get(var1)];
+        int[] d2 = domains[variables.get(var2)];
+        boolean first;
+        // boolean to denote the direction
         if (bt.getFirstVar() != var1) first = false;
         else first = true;
-//        System.out.println("order (first) is " + first);
         boolean changed = false;
         int ind = -1;
         for(int i : d1){
             ind++;
-//            System.out.println("i is " + i);
             if(i < 0) continue;
             boolean supported = false;
             int j = -1;
             while(!supported && j < d2.length - 1){
                 j++;
-//                System.out.println("d2 is " + d2[j]);
                 if(d2[j] < 0) continue;
+                // check the value pair is consistent
                 if(bt.checkMatch(i, d2[j], first)){
-//                    System.out.println(var1 + ": " + i + " has support in " + var2 + " var2: " + d2[j]) ;
-//                    System.out.println("first is " + first);
                     supported = true;
                 }
             }
             if(!supported){
-//                System.out.println("no support for value " + i + " of futurevar " + var1 + "!");
-//                System.out.println("drop " + i + " and all tuples from bt from it");
-                // add
-                int v = i;
+                // remove all the tuples from the constraints list
+                // to push to stack
                 List<BinaryTuple> rms = bt.removeTuple(i, first);
-//                System.out.println("&&&&&&&&&&&&&&&&&&&& removed tuples have length " + rms.size() + " ! &&&&&&&&&&&&&&&&&");
-                //constraintsolver.impl.BinaryTuple[] rmsArray = new constraintsolver.impl.BinaryTuple[rms.size()];
                 BinaryTuple[] rmsArray;
                 if(rms.size() > 0 ) {
                     rmsArray = rms.toArray(new BinaryTuple[0]);
@@ -376,6 +374,7 @@ public class Solver{
                 }
                 else {
                     // case where there are no removed tuples
+                    // pass dummy and check later
                     rmsArray = new BinaryTuple[1];
                     rmsArray[0] = new BinaryTuple(i, -1);
                 }
@@ -383,30 +382,19 @@ public class Solver{
                 Map<BinaryTuple, BinaryTuple[]> map = stack.pop();
                 BinaryTuple copyRightOrder = bt.getVars();
                 if(!first) copyRightOrder.setFirst(false);
-                map.put(copyRightOrder, rmsArray);//rms.toArray(rmsArray));
+                map.put(copyRightOrder, rmsArray);
                 stack.push(map);
-//                System.out.println("after pushing");
-//                System.out.println("first is "+ first);
-                // remove value from dom by setting the value to -1
-                //System.out.println("drop i, ind: " + ind);
+                // remove val
                 d1[ind] = EMPTY;
 
                 changed = true;
             }
         }
-//        System.out.println("after loop");
-//        System.out.println("d1 domains");
-       // for(int v: d1) System.out.println(v);
-        //int i = assigned[var2];
         if(isEmptyDomain(d1)) {
-//            System.out.println("Empty domain for " + var1);
             // domain is empty set fail flag and return immediately
             if(!type) fail = true;
             return false;
         }
-//        System.out.println("reached end of revise fc");
-        //System.out.println("reached end of revise fc with changed: " + changed);
-        //if(!changed) return true;
         if(!type) return changed;
         return true;
     }
@@ -417,14 +405,14 @@ public class Solver{
      * @param val value to assign
      * @return array of removed values
      */
-    protected int[] assign(int var, int val){
-        // count number of values atm
-        //int valid = (int) Arrays.stream(domains[var]).filter(e -> e > EMPTY).count();
+    private int[] assign(int var, int val){
         int valid = (int) Arrays.stream(domains[variables.get(var)]).filter(e -> e > EMPTY).count();
         int[] removed = new int[valid-1];
         int j = 0;
         int varIndex = variables.get(var);
         int[] dom = domains[varIndex];
+        // by assignment, remove all other values from the domain array by EMPTY
+        // and save these to new ``removed'' array to pass back
         for(int i = 0; i < domains[varIndex].length; i++){
             if(dom[i] != EMPTY && dom[i] != val){
                 removed[j++] = dom[i];
@@ -438,9 +426,9 @@ public class Solver{
      * recover values removed previously to var's domain
      * @param var variable considered
      * @param removed array of values previously removed
-     * @return
+     * @return boolean ensure all values removed are restored
      */
-    protected boolean unassign(int var, int[] removed){
+    private boolean unassign(int var, int[] removed){
         int varIndex = variables.get(var);
         int[] dom = domains[varIndex];
         int j = 0;
@@ -455,7 +443,7 @@ public class Solver{
      *
      * @return boolean for T/F
      */
-    protected boolean isEmptyDomain(int[] domain){
+    private boolean isEmptyDomain(int[] domain){
         return Arrays.stream(domain).allMatch(i -> i < 0);
     }
 
@@ -464,16 +452,19 @@ public class Solver{
      *
      * @return all not empty T/F
      */
-    protected boolean completeAssignment() {
+    private boolean completeAssignment() {
         return Arrays.stream(assigned).allMatch(i -> i > EMPTY);
     }
 
 
     /**
-     * prints out solution
-     *
+     * prints out solution according to the format for testing
+     * @param printType T for bulk print of statistics only, in csv, F for print out in txt including solutions
+     * @param fn output file path, provided if called from test, empty if called separately
+     * @param heuristics type of heuristics used to be included in the output (var#val)
+     * @throws IOException exception thrown in the error of invalid filepath
      */
-    protected void printSol(boolean printType, String fn, String heuristics) throws IOException {
+    void printSol(boolean exists, boolean printType, String fn, String heuristics) throws IOException {
         String wd = System.getProperty("user.dir");
         SimpleDateFormat formatter = new SimpleDateFormat("MM-dd_HH-mm");
         Date date = new Date();
@@ -482,76 +473,91 @@ public class Solver{
         if(printType && fn.equals("")){
             File file = new File(path.toString()+ '/' + csp.getName() + "_" +time + "_Solver_out.csv");
             FileWriter fr = new FileWriter(file);
-//            if(heuristics.equals("")) fr.write("Filename,Type,Time1,Time2,NodeCount1,NodeCount2\n");
-//            else fr.write("Filename,Type,Time1,Time2,NodeCount1,NodeCount2,VarOrder,ValOrder\n");
             fr.write("Filename,Type,Time1,Time2,NodeCount1,NodeCount2,VarOrder,ValOrder\n");
             fr.close();
             fn = file.getCanonicalPath();
-//            PrintStream ps = new PrintStream(path.toString()+ '/' + csp.getName() + "_" +time + "_Solver_out.csv");
-//            System.setOut(ps);
-
-//            System.out.println("Filename,Type,Time1,Time2,Node1,Node2");
         }
         if(!printType && fn.equals("")){
             // single output
-            fn = wd + "/runner/src/test/output/" + csp.getName() + "_" + time + "_out.txt";
+            fn = wd + "/src/test/output/" + csp.getName() + "_" + time + "_out.txt";
         }
-        counter.printStats(csp.getName(), printType, fn, heuristics);
+        counter.printStats(exists, csp.getName(), printType, fn, heuristics);
         if(!printType) {
             File file = new File(fn);
             FileWriter fr = new FileWriter(file, true);
-            fr.write("Solution:\n");
-            int i = 0;
-            for (Integer v : variables.keySet()) {
-                fr.write("Var " + v + ", " + assigned[i++] + "\n");
+            if(exists) {
+                fr.write("Solution:\n");
+                int i = 0;
+                for (Integer v : variables.keySet()) {
+                    fr.write("Var " + v + ", " + assigned[i++] + "\n");
+                }
+            }
+            else{
+                fr.write("No valid assignment");
             }
             fr.close();
         }
     }
 
-    void push(Map<BinaryTuple, BinaryTuple[]> map){
+    /**
+     * wrapper to push provided map to the liststack
+     * @param map map of <constraint (var1,var), list of pruned value pairs> from revise
+     */
+    private void push(Map<BinaryTuple, BinaryTuple[]> map){
         stack.push(map);
-    }
-
-    BinaryConstraint getConstraintIndex(int index){
-        return constraints.get(index);
-    }
-
-    int[] getVarDomain(int var){
-        return domains[variables.get(var)];
-        //return domains[var];
-    }
-
-    int getNum(){ return num; }
-
-    int[] assignVal(int var, int val){
-        assigned[variables.get(var)] = val;
-        //assigned[var] = val;
-        int[] removed = assign(var, val);
-        return removed;
-    }
-
-    void unassignVal(int var){
-        int v = assigned[variables.get(var)];
-        lastTry = new BinaryTuple(var, v);
-        assigned[variables.get(var)] = EMPTY;
-
-        //assigned[var] = EMPTY;
-    }
-
-    // Function to find the index of an element in a primitive array in Java
-    public static int find(int[] a, int target)
-    {
-        return Arrays.stream(a) 					// IntStream
-                .boxed()						// Stream<Integer>
-                .collect(Collectors.toList())   // List<Integer>
-                .indexOf(target);
     }
 
 
     /**
-     * to be run at the start, log all variables it is connected
-     * for every variable
+     * get the constraint from the constraints list given its index
+     * @param index index where constraint is located
+     * @return BinaryConstraint
+     */
+    private BinaryConstraint getConstraintIndex(int index){
+        return constraints.get(index);
+    }
+
+    /**
+     * wrapper to get single array of currently domain values
+     * for given variable
+     * @param var current variable considered
+     * @return integer array of domain values
+     */
+    private int[] getVarDomain(int var){
+        return domains[variables.get(var)];
+        //return domains[var];
+    }
+
+    /**
+     * wrapper to assign value to the variable,
+     * on the assigned array, calls assign and get
+     * all the removed values from the variable domain
+     * due to assignment
+     * @param var variable
+     * @param val value
+     * @return array of removed values
+     */
+    private int[] assignVal(int var, int val){
+        assigned[variables.get(var)] = val;
+        int[] removed = assign(var, val);
+        return removed;
+    }
+
+    /**
+     * unassign value to the variable from assigned array
+     * sets lastTry to get this assignment pair
+     * @param var variable to unassign from
+     */
+    private void unassignVal(int var){
+        int v = assigned[variables.get(var)];
+        lastTry = new BinaryTuple(var, v);
+        assigned[variables.get(var)] = EMPTY;
+
+    }
+
+    /**
+     * to be run at the start, log for each variable the list of
+     * variable to which it is connected
      */
     private void setConnections(){
         HashMap<Integer, List<Integer>> connectCounts = new HashMap<>();
@@ -577,27 +583,34 @@ public class Solver{
 
     }
 
-    protected int minConflicts(List<Integer> varList, int var){
+    /**
+     * value heuristics, find next variable according to min-conflicts method
+     * @param varList current variable list
+     * @param var current variable selected
+     * @return value to assign
+     */
+    private int minConflicts(List<Integer> varList, int var){
         int[] curVarDom = domains[variables.get(var)];
+        // get all variables var is connected to
         List<Integer> cons = connections.get(var);
         // <val of domain, no of incomp val in future vars' dom>
         HashMap<Integer, Integer> valCount = new HashMap<>();
         for(int val: curVarDom){
-            //System.out.println("val is " + val);
             if(val == EMPTY) continue;
             int notCom = 0;
             for(int futureVar : cons){
+                // ignore any variable that is already assigned
                 if(varList.indexOf(futureVar) == EMPTY) continue;
                 BinaryConstraint bc = getConstraintIndex(getConstraint(var, futureVar));
                 boolean first = true;
                 if(bc.getSecondVar() == var) first = false;
                 int[] otherDom = domains[variables.get(futureVar)];
                 for(int j = 0; j < otherDom.length; j++){
+                    // count any incompatible matches
                     if(!bc.checkMatch(val, otherDom[j], first)) notCom++;
                 }
 
             }
-            //System.out.println("put " + notCom);
             valCount.put(val, notCom);
 
         }
@@ -606,6 +619,12 @@ public class Solver{
         return valCount.keySet().iterator().next();
     }
 
+    /**
+     * a short helper function for sorting
+     * @param counts map to sort
+     * @param order T for ascending and F for descending order
+     * @return sorted map
+     */
     public HashMap<Integer, Integer> sort(HashMap<Integer, Integer> counts, boolean order){
         HashMap<Integer, Integer> sorted;
         // ascending order
@@ -634,31 +653,30 @@ public class Solver{
     }
 
     /// MAC +++++++++++++++++++++++++++++++++++++++=
-    public void doMAC()  {
+
+    /**
+     * get variable list, set the clock, apply AC for global arc consistency prior
+     * to the run
+     */
+    private void doMAC()  {
         List<Integer> varList = getVarList();
-        //System.out.println("got list for the first time");
-        //varList.forEach(System.out::println);
         counter.setStart();
-        AC3(varList, EMPTY);
+        AC3(EMPTY);
         MAC3(varList);
     }
 
     /**
      * returns all arcs in both directions, where there is a total
      * of v variables. When var == EMPTY, get all arcs for general enforcement again
+     * @param var throughout MAC call, initialise the arc containing only those related to the var
+     *            else, get all arcs for EMPTY var
      * @return array list of arcs saved as binary tuples
      */
-    public DLinkedListPriorityQueue getAllArcs(List<Integer> varList, int var) {
+    private DLinkedListPriorityQueue getAllArcs(int var) {
         DLinkedListPriorityQueue vars = new DLinkedListPriorityQueue();
-//        for(constraintsolver.impl.BinaryConstraint bc: getConstraints()){
-//            vars.enqueue(bc.getVars());
-//            vars.enqueue(new constraintsolver.impl.BinaryTuple(bc.getSecondVar(), bc.getFirstVar()));
-//        }
         if(var > EMPTY) {
             List<Integer> cons = getConnectionVar(var);
-            // add to arc only if it is those which are not assigned
             for (int v2 : cons) {
-                //if (varList.indexOf(v2) > EMPTY)
                 vars.enqueue(new BinaryTuple(v2, var));
             }
         }
@@ -676,46 +694,35 @@ public class Solver{
     /**
      * enforces arc consistency, get all arcs and enqueue as a block to start
      * uses doubly linked list queue
+     * @param var current variable assigned, to be passed to getAllArcs
+     * @return indicator whether it succeed
      *
      */
-    private boolean AC3(List<Integer> varList, int var) {
-        //System.out.println("************888888888 Inside AC3");
-        //DLinkedListPriorityQueue queue = new DLinkedListPriorityQueue();
-        //int[] vars = getVariables().keySet().stream().mapToInt(i -> i).toArray();
-        DLinkedListPriorityQueue queue = getAllArcs(varList, var);
+    private boolean AC3(int var) {
+        DLinkedListPriorityQueue queue = getAllArcs(var);
         Map<BinaryTuple, BinaryTuple[]> map = new HashMap<>();
         push(map);
-        //stack.push(map);
         while(!queue.isEmpty()){
             BinaryTuple tup = (BinaryTuple) queue.dequeue();
             int v1 = tup.getVal1();
             int v2 = tup.getVal2();
-//            System.out.println("DEQUEUED!!!!!!!");
-//            System.out.println("getval1: " + tup.getVal1() + " , getval2: " + tup.getVal2());
             int index = getConstraint(v1,v2);
-//            System.out.println("index is " + index);
             counter.increment(false);
             if(revise(false, getConstraintIndex(index), v1, v2)){
-                // domain changed, add more arcs
-//                System.out.println("done revise enqueue rest");
-                //ArrayList<constraintsolver.impl.BinaryConstraint> consts = getConstraints();
                 List<Integer> connected = getConnectionVar(v1);
                 for(int vv : connected){
-                    if(vv == v2) continue;// || varList.indexOf(vv) == EMPTY) continue;
+                    if(vv == v2) continue;
                     if(!checkIfExists(queue, vv, v1)) queue.enqueue(new BinaryTuple(vv, v1));
                 }
             }
-            // fail received
-
+            // revise gave fail, so domain emptied
             if(getFail()){
-                //System.out.println("FAIL RECEIVED");
                 setFail(false);
                 //break;
                 return false;
             }
 
         }
-
         return true;
     }
 
@@ -728,14 +735,6 @@ public class Solver{
      */
     public boolean checkIfExists(DLinkedListPriorityQueue queue, int v1, int v2){
         return queue.checkIfExists(new BinaryTuple(v1, v2));
-//        DLinkedListNode head = queue.getHead();
-//        DLinkedListNode start = head.next;
-//        boolean exists = false;
-//        while(start != queue.getTail() && !exists){
-//            if(start.element.matches(v1, v2, true))  exists = true;
-//            start = start.next;
-//        }
-//        return exists;
     }
 
     /**
@@ -746,69 +745,52 @@ public class Solver{
      */
     private int MAC3(List<Integer> varList) {
         counter.increment(true);
-       // System.out.println("**********=========== " + ++nodes + " th MAC CALL ==========");
-        int code = 0;
-        //varList = sortVarList(varList);
-        //if(last == EMPTY) last = varList.get(0);
-        int var =  selectVar(varList);//, last);//varList.get(0);
+        int code;
+        int var =  selectVar(varList);
         int val = selectVal(varList, var);
-        //assigned[var] = val;
-        //int[] removed = assign(var, val);
         int[] removed = assignVal(var, val);
-//        System.out.println("assigned - var: " + var + ", value: " + val);
-
         if(completeAssignment()){
             counter.setEnd();
-            //System.out.println("complete");
-            //printSol();
             return EXIT;
         }
 
-        else if(AC3(varList, var)){
-//            System.out.println("AC held, all supported, can proceed");
+        else if(AC3(var)){
             varList.remove(Integer.valueOf(var));
             last = var;
-//            System.out.println("removed the var, do MAC3");
             code = MAC3(varList);
             if(code > 0) return EXIT;
         }
-        //System.out.println("recover, undo pruning, unassign value " + val + " to var " + var);
         undoPruning();
         if(!unassign(var, removed)) System.out.println("ERROR");
-        //assigned[var] = EMPTY;
         unassignVal(var);
         varList.add(0,var);
-        //sortVarList(varList);
         // index of variable removed - ignored return value
         removeVal(var, val);
-//        System.out.println("Removed value " + val + " from var " + var);
         int[] doms = getVarDomain(var);
         if(!isEmptyDomain(doms)){
-            //var = EMPTY;
-//            System.out.println("If domain not empty apply AC3 again");
-            if(AC3(varList, var)) {
-//                System.out.println("do MAC3");
+            if(AC3(var)) {
                 code = MAC3(varList);
                 if(code > 0) return EXIT;
             }
-            //System.out.println("undopruning");
             undoPruning();
-
         }
         Arrays.sort(doms);
+        // restore value to the variable
         for(int i = 0; i < doms.length; i++){
             if(doms[i] < 0){
                 doms[i] = val;
                 break;
             }
         }
-       // System.out.println("reached end");
         return 0;
 
     }
 
     // FC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    /**
+     * get variable list, set the clock and run FC
+     */
     public void doForwardCheck(){
         List<Integer> varList = getVarList();
         counter.setStart();
@@ -823,30 +805,17 @@ public class Solver{
     private int FC(List<Integer> varList){
         counter.increment(false);
         counter.increment(true);
-        //System.out.println("########### FC " +  + "th Node#############");
-//        if(completeAssignment()){
-//            System.out.println("Print Solution");
-//            printSol();
-//            return EXIT;
-//        }
         // all positive so all variables are assigned
         if(completeAssignment()){
             counter.setEnd();
-            //System.out.println(" SOLUTION FOUND! EXIT");
-            //printSol();
             return EXIT;
         }
-        //System.out.println(varList.toString());
-        //varList = sortVarList(varList);
-        //System.out.println("after sorting: "  + varList.toString());
         if(last == EMPTY) last = varList.get(0);
-        int var = selectVar(varList);//, last);//varList.get(0); //or call selectVar
+        int var = selectVar(varList);
         last = var;
         int val = selectVal(varList, var);
-        //System.out.println("GO TO LEFT");
         List<Integer> copVarList = (List<Integer>) ((ArrayList<Integer>) varList).clone();
         if(branchFCLeft(varList, var, val) == EXIT) return EXIT ;
-        //System.out.println("GO TO RIGHT");
         if(branchFCRight(copVarList, var, val) == EXIT) return EXIT ;
         return 0;
     }
@@ -860,35 +829,20 @@ public class Solver{
      */
     private int branchFCLeft(List<Integer> varList, int var, int val){
         counter.increment(false);
-       // System.out.println("############ " + ++nodes + "th Node - LEFT ##########");
-        // assign
-
-//        assigned[var] = val;
-//        int[] removed = assign(var, val);
         int[] removed = assignVal(var, val);
-        //System.out.println("assigned - var: " + var + ", value: " + val);
         if(reviseFA(varList, var)){
-          //  System.out.println("assignment is consistent, has support");
-            //System.out.println("before removing : " + varList.toString() + " with var " + var);
             varList.remove(Integer.valueOf(var));
             last = -1;
-            //System.out.println("after removing : " + varList.toString());
-            //FC(varList without var)
             if(FC(varList) == EXIT){
-                //System.out.println("FOUND");
                 return EXIT;
             }
         }
-        //System.out.println("false, domain was emptied by the assignment undo");
         undoPruning();
-        //System.out.println("Undone pruning, unassigned value " + val + " to var " + var);
         // un-assign
         if(!unassign(var, removed)) System.out.println("ERROR");
-//        assigned[var] = EMPTY;
         unassignVal( var);
         varList.add(var);
         sortVarList(varList);
-        //System.out.println("###### End of Left Branch #######");
         return 0;
     }
 
@@ -902,16 +856,9 @@ public class Solver{
      */
     private int branchFCRight(List<Integer> varList, int var, int val){
         counter.increment(false);
-      //  System.out.println("###########" + ++nodes + "th Node - RIGHT ###########");
-        //System.out.println("Remove value " + val + " from var: " + var);
-        int ind = removeVal(var, val);
-        //System.out.println("check if removed: ");
+        removeVal(var, val);
         String s = "";
         int[] doms = getVarDomain(var);
-//        for (int v:doms) { s += Integer.toString(v);
-//            s += ", ";
-//        }
-        //System.out.println(s);
         // checks if domain is empty (if sum of all values = -(length)
         if(Arrays.stream(doms).sum() > (EMPTY)*(doms.length)){
             if(reviseFA(varList, var)){
@@ -919,7 +866,6 @@ public class Solver{
             }
             undoPruning();
         }
-        //restoreVal(var, val);
         //restore
         for(int i = 0; i < doms.length; i++){
             if(doms[i] < 0){
@@ -927,8 +873,6 @@ public class Solver{
                 break;
             }
         }
-        // domains[var][ind] = val;
-        //System.out.print("#### End of Right Branch #####");
         return 0;
     }
 
@@ -939,7 +883,6 @@ public class Solver{
      * @return boolean true if the future assignment makes it consistent/ else false mean unpruning should be done
      */
     private boolean reviseFA(List<Integer> varList, int var){
-        //System.out.println("===== ReviseFA ======");
         boolean consistent = true;
         Map<BinaryTuple, BinaryTuple[]> map = new HashMap<>();
         push(map);
@@ -950,7 +893,6 @@ public class Solver{
             int index = getConstraint(futureVar, var);
             if(index < 0) continue; // constraint doesn't exists so no need to revise
             consistent = revise(true, getConstraintIndex(index), futureVar, var);//, val);
-            //consistent = revise(index, futureVar, var);//, val);
             if(!consistent) return false;
         }
         return true;

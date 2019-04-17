@@ -5,16 +5,14 @@ package constraintsolver.impl;
  * code from the package uk.ac.standrews.cs.cs2001.lecture10;
  */
 public class DLinkedListPriorityQueue implements IPriorityQueue {
-    private DLinkedListNode head = new DLinkedListNode(new BinaryTuple(-1,0));//"Head");
-    private DLinkedListNode tail = new DLinkedListNode(new BinaryTuple(-1,1));//"Tail");
-    //private HashMap<constraintsolver.impl.BinaryTuple, Integer> queue = new HashMap<>();
+    private DLinkedListNode head = new DLinkedListNode(new BinaryTuple(-1,0));
+    private DLinkedListNode tail = new DLinkedListNode(new BinaryTuple(-1,1));
     private int current_size;
 
     /**
      * DoublyLinkedListPriorityQueue constructor.
      */
     public DLinkedListPriorityQueue() {
-        //System.out.println("initialise");
         head.previous = tail.next;
         head.next = tail.previous;
         current_size = 0;
@@ -30,15 +28,13 @@ public class DLinkedListPriorityQueue implements IPriorityQueue {
             if(start.element == bt) return true;
             start = start.next;
         }
-        //return queue.get(bt) != null;
         return false;
     }
 
     @Override
     public void enqueue(Comparable element) {
-        //System.out.println("enqueue elements " + ((constraintsolver.impl.BinaryTuple) element).toString());
         BinaryTuple bt = (BinaryTuple) element;
-       // queue.put(bt,1);
+
         DLinkedListNode new_node = new DLinkedListNode(bt);
         if (isEmpty()) {
             new_node.previous = head;
@@ -62,14 +58,6 @@ public class DLinkedListPriorityQueue implements IPriorityQueue {
         current_size++;
     }
 
-    public void blockEnqueue(DLinkedListPriorityQueue q1){
-        DLinkedListNode start = q1.head.next;
-        while(start != q1.tail){
-            enqueue(start.element);
-            start = start.next;
-        }
-    }
-
     @Override
     public Comparable dequeue() {
         if (isEmpty()) {
@@ -77,14 +65,14 @@ public class DLinkedListPriorityQueue implements IPriorityQueue {
         }
         else if (current_size == 1) {
             BinaryTuple object = head.next.element;
-            //queue.remove(object);
+
             clear();
             return object;
         }
         else {
             DLinkedListNode current = head.next;
             BinaryTuple object = current.element;
-            //queue.remove(object);
+
             DLinkedListNode found = head.next;
             while (current != tail.previous) {
                 if (current.next.element.compareTo(object) > 0) {

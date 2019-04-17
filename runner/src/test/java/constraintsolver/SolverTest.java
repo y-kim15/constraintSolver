@@ -25,16 +25,14 @@ public class SolverTest {
     private static String workdir;
     private static Solver fc;
     private static String[] inputs;
-    private PrintStream ps;
     private static String print = "N";
     private static String fullPath;
 
     @Parameterized.Parameters
     public static Iterable<? extends Object[]> config() throws IOException{
         String wd = System.getProperty("user.dir");
-        System.out.println("working directory is "+ wd);
         workdir = wd;
-        String dir = "";
+        String dir;
         if(System.getProperty("dataDir").isEmpty()) dir = "resources";
         else dir = System.getProperty("dataDir");
         Path path = Paths.get(wd, "src/test/"+dir);
@@ -45,11 +43,9 @@ public class SolverTest {
         List<String> files = new ArrayList<>();
         int num = 0;
         for(String fs : inputs){
-            System.out.println("file name is " + fs);
             files.add(absPath+"/"+fs);
             num++;
         }
-        Object[] obj = files.toArray();
         String type;
         if(System.getProperty("printType").isEmpty()) type = print;
         else type = System.getProperty("printType");
@@ -81,6 +77,7 @@ public class SolverTest {
     private String fn;
     private static boolean type;
     private String output;
+    private boolean exists;
 
     public SolverTest(String fn, String printType, String output) throws IOException{
         this.fn = fn;
@@ -92,8 +89,8 @@ public class SolverTest {
     }
 
     @BeforeClass
-    public static void makeReader() throws IOException {
-        System.out.println("FC Solver Unit Tests===================");
+    public static void makeReader(){
+        System.out.println("Solver Unit Tests===================");
         reader = new BinaryCSPReader();
 
 
@@ -106,30 +103,31 @@ public class SolverTest {
         String[] splits = fn.split("/");
         String filename = splits[splits.length-1];
 
-        System.out.println("Test Input: "+ filename+"---------------");
-
+        System.out.println("Test Input: "+ filename+"=============");
         fc = new Solver(prob, Heuristics.SDF, Heuristics.ASCEND);
-        //fc.setNew(prob);
 
     }
 
     @Test
     public void solveFC(){
-        fc.solve(true);
-        System.out.println("----------------------------------------");
+        System.out.println("FC --------");
+        exists = fc.solve(true);
+        System.out.println("-------------------");
     }
 
     @Test
     public void solveMAC(){
-        fc.solve(false);
-        System.out.println("----------------------------------------");
+        System.out.println("MAC ---------");
+        exists = fc.solve(false);
+        System.out.println("---------------------");
+
     }
 
     @After
     public void printReset() throws IOException{
-        System.out.println("fullpath is "+ output);
-        fc.printSol(type, output, "sdf#asc");
+        fc.printSol(exists, type, output, "sdf#asc");
         fc.reset();
+        System.out.println("=========================================");
     }
 
 

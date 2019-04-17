@@ -12,14 +12,9 @@ public final class QueensGenerator {
     }
     int n = Integer.parseInt(args[0]) ;
     String wd = System.getProperty("user.dir");
-    //System.out.println("working directory is "+ wd);
     String path = "src/test/extra/";
-    //Path path = Paths.get(wd, "src/test/extra");
     String fn = path +n+"Queens.csp";
     PrintWriter writer = new PrintWriter(wd + "/" + fn);
-
-//    PrintStream ps = new PrintStream(fn);
-//    System.setOut(ps);
     writer.println("//"+n+"-Queens.") ;
     writer.println("\n// Number of variables:\n"+n) ;
     writer.println("\n// Domains of the variables: 0.. (inclusive)") ;
