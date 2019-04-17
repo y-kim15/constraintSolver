@@ -37,9 +37,9 @@ public final class BinaryCSPReader {
     BinaryCSPReader reader = new BinaryCSPReader() ;
 	BinaryCSP prob = reader.readBinaryCSP(args[0]);
 	Solver solver = new Solver(prob, Heuristics.SDF, Heuristics.ASCEND);
-	boolean found = solver.solve(false);
-	if(found) System.out.println("found");
-	else System.out.println("no soln");
+	boolean found = solver.solve(true);
+	if(found) System.out.println("FOUND");
+	else System.out.println("SOLUTION");
 	solver.printSol( found, false, "", "sdf#asc");
 	solver.reset();
   }

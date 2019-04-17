@@ -61,7 +61,8 @@ public class AdvSolverTest {
         return prepareParam(files, list, order, mType);
     }
 
-    public static List<Object[]> prepareParam(List<String> files, List<String> type, String ordering, List<String> mType) throws IOException {
+    public static List<Object[]> prepareParam(List<String> files, List<String> type, String ordering,
+                                              List<String> mType) throws IOException {
         List<Object[]> newList = new ArrayList<>();
         SimpleDateFormat formatter = new SimpleDateFormat("MM-dd_HH-mm");
         Date date = new Date();
@@ -70,7 +71,7 @@ public class AdvSolverTest {
             fullPath = workdir + "/src/test/output/" + time + "_" + ordering + "_Solver_out.csv";
             File file = new File(fullPath);
             FileWriter fr = new FileWriter(file);
-            fr.write("Filename,Type,Time1,Time2,NodeCount1,NodeCount2\n");
+            fr.write("Problem,Type,Time(ms),Time(s),Depth,Count2\n");
             fr.close();
         }
         else fullPath = workdir + "/src/test/output/" + time + "_" + "HeuSolver_out.txt";
@@ -79,7 +80,8 @@ public class AdvSolverTest {
         int var;
         int val;
         if(ordering.equals("all")){
-            heuristics_var = new Heuristics[]{Heuristics.MAXDEG, Heuristics.MAXCAR, Heuristics.SDF, Heuristics.BRELAZ, Heuristics.DOMDEG};
+            heuristics_var = new Heuristics[]{Heuristics.MAXDEG, Heuristics.MAXCAR, Heuristics.SDF,
+                    Heuristics.BRELAZ, Heuristics.DOMDEG};
             heuristics_val = new Heuristics[]{Heuristics.ASCEND, Heuristics.MINCONF};
             var = 5; val = 2;
         }
@@ -96,7 +98,8 @@ public class AdvSolverTest {
         for(int v1 = 0; v1 < var; v1++) {
             for(int v2 = 0; v2 < val; v2++) {
                 for (int i = 0; i < files.size(); i++) {
-                    newList.add(new Object[]{files.get(i), type.get(i), mType.get(i), fullPath, heuristics_var[v1],heuristics_val[v2]});
+                    newList.add(new Object[]{files.get(i), type.get(i), mType.get(i), fullPath,
+                            heuristics_var[v1],heuristics_val[v2]});
                 }
             }
         }

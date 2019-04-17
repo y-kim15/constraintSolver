@@ -60,7 +60,7 @@ public class QueensTest {
             fullPath = workdir + "/src/test/output/" + time + "_" + lb + "-" + ub + "MultiQueens_Solver_out.csv";
             File file = new File(fullPath);
             FileWriter fr = new FileWriter(file);
-            fr.write("Filename,Type,Time1,Time2,NodeCount1,NodeCount2\n");
+            fr.write("Problem,Type,Time(ms),Time(s),Depth,Count2\n");
             fr.close();
         }
         else fullPath = workdir + "/src/test/output/" + time + "_" + lb + "-" + ub + "MultiQueens_Solver_out.txt";
