@@ -45,7 +45,6 @@ public class AdvSolverTest {
         List<String> files = new ArrayList<>();
         int num = 0;
         for(String fs : inputs){
-            System.out.println("file name is " + fs);
             files.add(absPath+"/"+fs);
             num++;
         }
@@ -151,29 +150,25 @@ public class AdvSolverTest {
         BinaryCSP prob = reader.readBinaryCSP(fn);
         String[] splits = fn.split("/");
         String filename = splits[splits.length-1];
-
-        System.out.println("Test Input: "+ filename+"---------------");
-
         fc = new Solver(prob, var, val);
+        System.out.println("file name is " + filename);
 
     }
 
     @Test
     public void solveFC() throws IOException{
         assumeTrue(testFC);
-        System.out.println("FC --------------------------------- ");
+        System.out.println("FC --------------------------------");
         exists = fc.solve(true);
         fc.printSol(exists, type, output, getHeuristics(var, val));
-        if(!type) System.out.println("----------------------------------------");
     }
 
     @Test
     public void solveMAC() throws IOException{
         assumeTrue(testMAC);
-        System.out.println("MAC --------------------------------- ");
+        System.out.println("MAC --------------------------------");
         exists = fc.solve(false);
         fc.printSol(exists, type, output, getHeuristics(var, val));
-        if(!type) System.out.println("----------------------------------------");
     }
 
     @After

@@ -37,7 +37,6 @@ public class SolverTest {
         else dir = System.getProperty("dir");
         Path path = Paths.get(wd, "src/test/"+dir);
         String absPath = path.toAbsolutePath().toString();
-        System.out.println("path abs is " + path.toAbsolutePath().toString());
         File resources = new File(path.toAbsolutePath().toString());
         inputs = resources.list();
         List<String> files = new ArrayList<>();
@@ -118,10 +117,8 @@ public class SolverTest {
         BinaryCSP prob = reader.readBinaryCSP(fn);
         String[] splits = fn.split("/");
         String filename = splits[splits.length-1];
-
-        System.out.println("Test Input: "+ filename+"=============");
         fc = new Solver(prob, Heuristics.SDF, Heuristics.ASCEND);
-
+        System.out.println("file name is " + filename);
     }
 
     @Test
@@ -129,7 +126,6 @@ public class SolverTest {
         assumeTrue(testFC);
         System.out.println("FC --------------------------------");
         exists = fc.solve(true);
-        System.out.println("-------------------");
         fc.printSol(exists, type, output, "sdf#asc");
     }
 
@@ -138,7 +134,6 @@ public class SolverTest {
         assumeTrue(testMAC);
         System.out.println("MAC ---------------------------------");
         exists = fc.solve(false);
-        System.out.println("---------------------");
         fc.printSol(exists, type, output, "sdf#asc");
 
     }
@@ -146,7 +141,6 @@ public class SolverTest {
     @After
     public void reset() {
         fc.reset();
-        System.out.println("=========================================");
     }
 
 
