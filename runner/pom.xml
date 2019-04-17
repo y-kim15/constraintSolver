@@ -108,16 +108,20 @@
                             <value>${upper}</value>
                         </property>
                         <property>
-                            <name>printType</name>
-                            <value>${printType}</value>
+                            <name>print</name>
+                            <value>${print}</value>
                         </property>
                         <property>
                             <name>order</name>
                             <value>${order}</value>
                         </property>
                         <property>
-                            <name>dataDir</name>
-                            <value>${dataDir}</value>
+                            <name>dir</name>
+                            <value>${dir}</value>
+                        </property>
+                        <property>
+                            <name>m</name>
+                            <value>${m}</value>
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>false</redirectTestOutputToFile>

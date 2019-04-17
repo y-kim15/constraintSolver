@@ -45,8 +45,8 @@ public class QueensTest {
         List<String> ints = new ArrayList<>();
         for(int i = low; i <= up; i++) ints.add(Integer.toString(i));
         String type;
-        if(System.getProperty("printType").isEmpty()) type = print;
-        else type = System.getProperty("printType");
+        if(System.getProperty("print").isEmpty()) type = print;
+        else type = System.getProperty("print");
         List<String> list = Collections.nCopies(up-low+1,type);
         return prepareParam(ints, list);
     }
