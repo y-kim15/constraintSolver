@@ -54,8 +54,10 @@ section prior to the usage).
  mvn clean test [-Dtest {AdvSolverTest}] [-Dorder {all, allVal, basic, def (dynamic)}] [-Dm {b, fc, mac}]
 ````
 As with previous test class data directory can be customised to solve new instances, so
-does print type which can be adjusted using -Dprint argument. -Dorder is the important
+does print type which can be adjusted using *-Dprint* argument. *-Dorder* is the important
 argument to use. The test class can run with 3 settings.
+
+#### Additional Arguments
 ````
 -Dorder={all, allVal, basic, def (dynamic)}
 ````
@@ -63,7 +65,7 @@ argument to use. The test class can run with 3 settings.
 |-----|------------------|--------|-------|
 | will run under all 5 variable order heuristics, both static and dynamic, and 2 value order heuristics. (includes 2 static variable ordering) | will run under all 3 dynamic variable order heuristics with 1 value order heuristics. (default)    | will run under 3 dynamic variable order heuristics with 2 value order heuristics.  | same as SolverTest |
 
-Both SolverTest and AdvSolverTest support additional optional argument -Dm=<type>
+Both *SolverTest* and *AdvSolverTest* support additional optional argument *-Dm=<type>*
 where you can specify to run only with one algorithm type, as the default set up is to use
 each one in solving the given problems.
   
