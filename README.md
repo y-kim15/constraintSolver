@@ -1,6 +1,6 @@
 # CS4402 Practical 2 - Constraint Solver Implementation
 
-This is a containing the source code for Practical 2 of Constraint Programming module CS4402.
+This repository contains the source code for Practical 2 of Constraint Programming module CS4402.
 
 ### Overview
 This practical involved implementing a constraint solver supporting two algorithms,
